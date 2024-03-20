@@ -10,13 +10,19 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 ```
 
 ## Progress
-[-] Topic Stack & Cycling
+[-] Topic UI
+  - [x] Topic cycles up and down with an active topic
+  - [] Bottom bar acts as top of stack instead of mirroring sidebar's active item
 
-[] Bracket UI with hotkeys to select winners
+[-] Bracket UI
+  - [x] Autogenerate appropriate number of rounds given 2-16 seeds
+  - [x] appropriately match seeds.
+  - [] play-in tournament pre-round that provides 2 extra seeds.
+  - [] logic can handle 18 seeds total
 
 [] Three-part sidebar- with intro topics, (optional brackets), end topics
 
-[] "Backend" UI to make adding topics easy
+[] "Backend" UI for easy input of topics/categories/seeds easy
 
 [] Styling to make everything look good
 

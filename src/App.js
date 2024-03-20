@@ -2,7 +2,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import './App.css';
 
-// Updated data structure
+// Separate data structure for categories and topics
 const categoriesWithTopics = [
   {
     categoryName: "NBA Legends",
@@ -18,15 +18,6 @@ const categoriesWithTopics = [
     topics: [
       { title: "1996 Chicago Bulls: The 72-10 Record", isActive: false },
       { title: "Golden State Warriors: The Splash Brothers Era", isActive: false },
-    ]
-  },
-  {
-    categoryName: "Basketball Fundamentals",
-    topics: [
-      { title: "The Art of Dribbling", isActive: false },
-      { title: "Shooting Techniques", isActive: false },
-      { title: "Defensive Strategies", isActive: false },
-      { title: "Importance of Teamwork", isActive: false },
     ]
   },
   {
@@ -47,63 +38,227 @@ const categoriesWithTopics = [
   }
 ];
 
+// Initial seeds/names hardcoded by the user
+const teams = [
+  { seed: 1, name: "Lakers" },
+  { seed: 2, name: "Celtics" },
+  { seed: 3, name: "Bulls" },
+  { seed: 4, name: "Heat" },
+  { seed: 5, name: "Warriors" },
+  { seed: 6, name: "Spurs" },
+  { seed: 7, name: "Rockets" },
+  { seed: 8, name: "Nets" },
+  { seed: 9, name: "Jonnhy" },
+  { seed: 10, name: "Rohnny" },
+  { seed: 11, name: "Donny" },
+  { seed: 12, name: "Koni" },
+  { seed: 13, name: "Moni" },
+  { seed: 14, name: "CHewbacca" },
+  { seed: 15, name: "Bakaka" },
+  { seed: 16, name: "Ratata" },
+];
+
+// Calculates total rounds needed for the tournament
+const totalRoundsNeeded = (teamCount) => {
+  return Math.ceil(Math.log(teamCount) / Math.log(2));
+};
+
+const generateRoundName = (numTeams) => {
+  switch (numTeams) {
+    case 2:
+      return 'Finals';
+    case 4:
+      return 'Semifinals';
+    case 8:
+      return 'Quarterfinals';
+    default:
+      if (numTeams > 8) {
+        return `Round of ${numTeams}`;
+      } else {
+        return `Round of ${numTeams * 2}`; // For intermediary rounds not explicitly named
+      }
+  }
+};
+
+// Pre-generates all rounds with placeholders
+const pregenerateRounds = (teamCount) => {
+  let rounds = [];
+  let matchupsCount = teamCount / 2;
+  for (let i = 0; i < totalRoundsNeeded(teamCount); i++) {
+    let round = {
+      name: generateRoundName(matchupsCount * 2),
+      brackets: Array(matchupsCount).fill().map(() => ({ matchup: [{ name: '?' }, { name: '?' }], winner: null })), // TODO names should be null lol
+    };
+    rounds.push(round);
+    matchupsCount /= 2; // Each subsequent round has half the number of matchups
+  }
+  return rounds;
+};
+
+const createInitialMatchups = (teams) => {
+  // Sort teams by seed in ascending order
+  const sortedTeams = [...teams].sort((a, b) => a.seed - b.seed);
+  
+  let matchups = [];
+  for (let i = 0; i < sortedTeams.length / 2; i++) {
+    matchups.push({ matchup: [sortedTeams[i], sortedTeams[sortedTeams.length - 1 - i]], winner: null });
+  }
+  return matchups;
+};
 
 const App = () => {
-  // Flatten topics to calculate active topic
-  const flatTopics = categoriesWithTopics.flatMap(category => category.topics.map(topic => ({ ...topic, category: category.categoryName })));
-  const [activeTopic, setActiveTopic] = useState(flatTopics[0].title);
+  const pregeneratedRounds = pregenerateRounds(teams.length);
+  const updatedFirstRoundMatchups = createInitialMatchups(teams);
+  pregeneratedRounds[0].brackets = updatedFirstRoundMatchups;
 
-  const cycleActiveTopic = (direction) => {
-    const currentIndex = flatTopics.findIndex(topic => topic.title === activeTopic);
+  const [rounds, setRounds] = useState(pregeneratedRounds);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [currentMatchup, setCurrentMatchup] = useState(0);
+
+  // Combine topics and brackets for cycling
+  const flatItems = [
+    ...categoriesWithTopics.flatMap(category => category.topics),
+    ...rounds.flatMap(round => round.brackets),
+  ];
+  const [activeItem, setActiveItem] = useState(flatItems[0]);
+
+  // Function to cycle active topic/bracket
+  const cycleActiveItem = (direction) => {
+    const currentIndex = flatItems.findIndex(item => item === activeItem);
     let nextIndex = currentIndex;
 
     if (direction === 'forward') {
-      nextIndex = (currentIndex + 1) % flatTopics.length;
+      nextIndex = (currentIndex + 1) % flatItems.length;
     } else if (direction === 'backward') {
-      nextIndex = (currentIndex - 1 + flatTopics.length) % flatTopics.length;
+      nextIndex = (currentIndex - 1 + flatItems.length) % flatItems.length;
     }
 
-    setActiveTopic(flatTopics[nextIndex].title);
+    setActiveItem(flatItems[nextIndex]);
   };
 
+  const updateFutureRounds = (updatedRounds, currentRound) => {
+    if (currentRound + 1 < updatedRounds.length) {
+      // Logic to advance winners to the next round
+      const winners = updatedRounds[currentRound].brackets.map(bracket => bracket.winner !== null ? teams[bracket.matchup[bracket.winner].seed - 1] : null);
+      const nextRoundMatchups = createInitialMatchups(winners.filter(winner => winner !== null));
+      updatedRounds[currentRound + 1].brackets = nextRoundMatchups;
+    }
+    return updatedRounds;
+  };
+
+  // !TODO you can't modify or undo winners once selected. and if you press left/right on a winner, it actually triggers the select winner for the next round.
+  const selectWinner = (winnerIndex) => {
+    if ('matchup' in activeItem) { // Ensure we're working with a matchup
+      let updatedRounds = [...rounds];
+      updatedRounds[currentRound].brackets[currentMatchup].winner = winnerIndex;
+      
+      // Check if all matchups in the current round have winners to proceed to update the future round
+      const allDecided = updatedRounds[currentRound].brackets.every(bracket => bracket.winner !== null);
+      if (allDecided) {
+        updatedRounds = updateFutureRounds(updatedRounds, currentRound);
+        setCurrentRound(currentRound + 1);
+        setCurrentMatchup(0);
+        // Optionally update activeItem to the first matchup of the next round or reset to the first topic
+        // setActiveItem(updatedRounds[currentRound + 1] ? updatedRounds[currentRound + 1].brackets[0] : flatItems[0]);
+      } else {
+        let nextMatchup = (currentMatchup + 1) % updatedRounds[currentRound].brackets.length;
+        setCurrentMatchup(nextMatchup);
+        // Update activeItem to the next matchup in the current round
+        setActiveItem(updatedRounds[currentRound].brackets[nextMatchup]);
+      }
+      
+      setRounds(updatedRounds);
+    }
+  };
+
+
+
+  useEffect(() => {
+    const flatItemsUpdate = [
+      ...categoriesWithTopics.flatMap(category => category.topics),
+      ...rounds.flatMap(round => round.brackets),
+    ];
+  
+    // Improved check for the current activeItem's existence in the updated lists
+    const activeExistsInUpdated = flatItemsUpdate.some(item => {
+      // Adjust logic for topics
+      if ('title' in activeItem && item.title === activeItem.title) {
+        return true; // Found the topic
+      } else if ('matchup' in activeItem && 'matchup' in item) {
+        // Adjust logic for brackets/matchups
+        return item.matchup[0].name === activeItem.matchup[0].name && item.matchup[1].name === activeItem.matchup[1].name;
+      }
+      return false;
+    });
+  
+    // Update activeItem if it no longer exists in the updated list
+    if (!activeExistsInUpdated) {
+      setActiveItem(flatItemsUpdate[0]); // Reset to the first available item
+    }
+  }, [rounds, categoriesWithTopics]);
+  
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Merging key handling logic for cycling topics/brackets and selecting winners
       if (e.key === "ArrowDown") {
-        cycleActiveTopic('forward');
+        cycleActiveItem('forward');
       } else if (e.key === "ArrowUp") {
-        cycleActiveTopic('backward');
+        cycleActiveItem('backward');
+      } else if (e.key === "ArrowRight") {
+        selectWinner(0);
+      } else if (e.key === "ArrowLeft") {
+        selectWinner(1);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [activeTopic]);
+  }, [activeItem, currentMatchup, currentRound, rounds]);
 
   return (
     <div id="main-container">
-      <Sidebar categoriesWithTopics={categoriesWithTopics} activeTopic={activeTopic} setActiveTopic={setActiveTopic} />
-      <BottomBar activeTopic={activeTopic} />
+      <Sidebar categoriesWithTopics={categoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} />
+      <BottomBar activeItem={activeItem} />
     </div>
   );
 };
 
-const Sidebar = ({ categoriesWithTopics, activeTopic, setActiveTopic }) => {
+const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem }) => {
   useEffect(() => {
     const activeElement = document.querySelector('.active');
     if (activeElement) {
       activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [activeTopic]);
+  }, [activeItem]);
 
   return (
     <div id="right-sidebar">
       {categoriesWithTopics.map((category, categoryIndex) => (
-        <div key={categoryIndex}>
-          <h3>{`${categoryIndex + 1}. ${category.categoryName}`}</h3>
-          <ul id="topic-list">
+        <div key={`topic-${categoryIndex}`}>
+          <h3>{category.categoryName}</h3>
+          <ul>
             {category.topics.map((topic, topicIndex) => (
-              <li key={topicIndex} className={topic.title === activeTopic ? 'active' : ''} onClick={() => setActiveTopic(topic.title)}>
-                {`${topicIndex + 1}. ${topic.title}`}
+              <li key={`topic-item-${topicIndex}`}
+                className={topic === activeItem ? 'active' : ''}
+                onClick={() => setActiveItem(topic)}>
+                {topic.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      {rounds.map((round, roundIndex) => (
+        <div key={`round-${roundIndex}`}>
+          <h3>{round.name}</h3>
+          <ul>
+            {round.brackets.map((bracket, bracketIndex) => (
+              <li key={`bracket-item-${bracketIndex}`}
+                className={bracket === activeItem ? 'active' : ''}
+                onClick={() => setActiveItem(bracket)}>
+                {bracket.matchup[0].name !== '?' ?
+                  `${bracket.matchup[0].seed}. ${bracket.matchup[0].name} vs. ${bracket.matchup[1].seed}. ${bracket.matchup[1].name}` :
+                  "? vs ?"}
               </li>
             ))}
           </ul>
@@ -113,10 +268,41 @@ const Sidebar = ({ categoriesWithTopics, activeTopic, setActiveTopic }) => {
   );
 };
 
-const BottomBar = ({ activeTopic }) => {
+
+const BottomBar = ({ activeItem }) => {
+  let content = 'Select an item'; // Default message when no item is active
+
+  // Determine the content based on the type of the active item
+  if (activeItem) {
+    if (activeItem.title) {
+      // It's a topic
+      content = activeItem.title;
+    } else if (activeItem.matchup) {
+      // It's a bracket
+      const { matchup, winner } = activeItem;
+      const matchupContent = matchup[0].name !== '?' ? `${matchup[0].seed}. ${matchup[0].name} vs. ${matchup[1].seed}. ${matchup[1].name}` : "? vs ?";
+
+      // Prepare styled content to highlight the winner
+      content = (
+        <span>
+          {matchup.map((team, index) => (
+            <span key={index} style={winner === index ? { fontWeight: 'bold', textDecoration: 'underline' } : {}}>
+              {index > 0 ? ' vs. ' : ''}{team.seed}. {team.name}
+            </span>
+          ))}
+        </span>
+      );
+
+      // If it's a placeholder match, revert to the simple text display
+      if (matchup[0].name === '?') {
+        content = matchupContent;
+      }
+    }
+  }
+
   return (
     <div id="bottom-bar">
-      <div id="active-topic">{activeTopic}</div>
+      <div id="active-item">{typeof content === 'string' ? content : content}</div>
     </div>
   );
 };
