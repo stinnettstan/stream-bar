@@ -1,0 +1,55 @@
+/* Apply border-box to all elements */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+#main-container {
+  position: relative; /* Ensures child elements are positioned relative to this container */
+  width: 1920px;
+  height: 1080px;
+}
+
+#main-container, html, body {
+  margin: 0;
+  padding: 0;
+}
+
+#right-sidebar {
+  position: absolute;
+  right: 0;
+  top: 0; /* Adjusted to align with the top of the container */
+  width: 330px;
+  height: 1080px; /* May need adjustment depending on the bottom bar's position */
+  z-index: 2; /* Higher z-index ensures it overlays the bottom bar */
+  overflow-y: auto;
+  background-color: aliceblue;
+}
+
+#bottom-bar {
+  position: absolute;
+  bottom: 0;
+  width: 1920px;
+  height: 185px;
+  z-index: 1; /* Lower z-index places it beneath the sidebar */
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  background-color: yellow;
+  font-size:  40px;
+}
+
+#topic-list li {
+  list-style-type: none;
+  cursor: pointer;
+  margin: 5px 0;
+  font-size: 20px;
+}
+
+#right-sidebar ul {
+  margin-bottom: 100px;
+}
+
+.active {
+  color: red;
+  font-weight: bold;
+}
