@@ -1,5 +1,3 @@
-// https://github.com/maxime515
-
 ## Info 
 This is a Preact (smaller version of React) project, written in jsx/css. As per [specs](https://docs.google.com/document/d/18r2v2RA5RsN_dcxmPuq7agm58Hu5MV81Q3RhO4tAF-E/edit)
 
