@@ -11,9 +11,13 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 
 ## Progress
 [-] Topic Stack & Cycling
+
 [] Bracket UI with hotkeys to select winners
+
 [] Three-part sidebar- with intro topics, (optional brackets), end topics
+
 [] "Backend" UI to make adding topics easy
+
 [] Styling to make everything look good
 
 
