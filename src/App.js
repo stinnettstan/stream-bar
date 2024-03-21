@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useRef, useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import './App.css';
 
@@ -98,7 +98,7 @@ const pregenerateRounds = (teamCount) => {
 const createInitialMatchups = (teams) => {
   // Sort teams by seed in ascending order
   const sortedTeams = [...teams].sort((a, b) => a.seed - b.seed);
-  
+
   let matchups = [];
   for (let i = 0; i < sortedTeams.length / 2; i++) {
     matchups.push({ matchup: [sortedTeams[i], sortedTeams[sortedTeams.length - 1 - i]], winner: null });
@@ -133,7 +133,32 @@ const App = () => {
     }
 
     setActiveItem(flatItems[nextIndex]);
+    // After setting the new active item, scroll to its header
+    scrollToActiveHeader(flatItems[nextIndex]);
   };
+
+  // Additional function to scroll to the active item's header
+  const scrollToActiveHeader = (activeItem) => {
+    let headerId = '';
+    if ('title' in activeItem) {
+      // It's a topic, find its category
+      const category = categoriesWithTopics.find(cat => cat.topics.includes(activeItem));
+      headerId = `header-${category.categoryName}`;
+    } else if ('matchup' in activeItem) {
+      // It's a matchup, find its round
+      const round = rounds.find(r => r.brackets.includes(activeItem));
+      headerId = `header-${round.name}`;
+    }
+    // If we have a valid headerId, scroll to it
+    if (headerId) {
+      const headerElement = document.getElementById(headerId);
+      if (headerElement) {
+        headerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
+
 
   const updateFutureRounds = (updatedRounds, currentRound) => {
     if (currentRound + 1 < updatedRounds.length) {
@@ -151,11 +176,11 @@ const App = () => {
       // Find the round of the active matchup
       const activeRoundIndex = updatedRounds.findIndex(round =>
         round.brackets.some(bracket => bracket === activeItem));
-  
+
       if (activeRoundIndex === currentRound) { // Act only if the active matchup is in the current round
         const activeMatchupIndex = updatedRounds[activeRoundIndex].brackets.findIndex(bracket => bracket === activeItem);
         updatedRounds[activeRoundIndex].brackets[activeMatchupIndex].winner = winnerIndex;
-        
+
         // Logic to update future rounds and potentially advance the current round
         const allDecided = updatedRounds[currentRound].brackets.every(bracket => bracket.winner !== null);
         if (allDecided) {
@@ -176,7 +201,7 @@ const App = () => {
       ...categoriesWithTopics.flatMap(category => category.topics),
       ...rounds.flatMap(round => round.brackets),
     ];
-  
+
     // Improved check for the current activeItem's existence in the updated lists
     const activeExistsInUpdated = flatItemsUpdate.some(item => {
       // Adjust logic for topics
@@ -188,13 +213,13 @@ const App = () => {
       }
       return false;
     });
-  
+
     // Update activeItem if it no longer exists in the updated list
     if (!activeExistsInUpdated) {
       setActiveItem(flatItemsUpdate[0]); // Reset to the first available item
     }
   }, [rounds, categoriesWithTopics]);
-  
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Merging key handling logic for cycling topics/brackets and selecting winners
@@ -215,25 +240,37 @@ const App = () => {
 
   return (
     <div id="main-container">
-      <Sidebar categoriesWithTopics={categoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} />
+      <Sidebar categoriesWithTopics={categoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
       <BottomBar activeItem={activeItem} />
     </div>
   );
 };
 
-const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem }) => {
-  useEffect(() => {
-    const activeElement = document.querySelector('.active');
-    if (activeElement) {
-      activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader }) => {
+  // Ref for the sidebar container
+  const sidebarRef = useRef(null);
+
+  const adjustBottomPadding = () => {
+    if (sidebarRef.current) {
+      const sidebar = sidebarRef.current;
+      const sidebarHeight = sidebar.offsetHeight;
+
+      // Set the bottom padding to the sidebar's height
+      sidebar.style.paddingBottom = `${sidebarHeight}px`;
     }
+  };
+
+  useEffect(() => {
+    scrollToActiveHeader(activeItem);
+    // After ensuring the active header is visible, adjust the padding if needed
+    adjustBottomPadding();
   }, [activeItem]);
 
   return (
-    <div id="right-sidebar">
+    <div id="right-sidebar" ref={sidebarRef}>
       {categoriesWithTopics.map((category, categoryIndex) => (
         <div key={`topic-${categoryIndex}`}>
-          <h3>{category.categoryName}</h3>
+          <h3 id={`header-${category.categoryName}`}>{category.categoryName}</h3>
           <ul>
             {category.topics.map((topic, topicIndex) => (
               <li key={`topic-item-${topicIndex}`}
@@ -248,7 +285,7 @@ const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem }) =>
 
       {rounds.map((round, roundIndex) => (
         <div key={`round-${roundIndex}`}>
-          <h3>{round.name}</h3>
+          <h3 id={`header-${round.name}`}>{round.name}</h3>
           <ul>
             {round.brackets.map((bracket, bracketIndex) => (
               <li key={`bracket-item-${bracketIndex}`}
