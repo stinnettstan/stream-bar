@@ -8,7 +8,20 @@
   width: 1920px;
   height: 1080px;
 }
+#backend-ui-container {
+  margin-right: 330px; /* Same as sidebar width */
+  padding-bottom: 185px; /* Same as bottom bar height */
+  height: calc(100% - 185px); /* Adjust height to exclude bottom bar */
+  overflow: auto; /* For scrolling, if needed */
+}
 
+#save-button-container {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 195px; /* Adjust based on bottom bar height and desired spacing */
+  width: calc(100% - 330px); /* Adjust width to exclude sidebar */
+}
 #main-container, html, body {
   margin: 0;
   padding: 0;
@@ -52,4 +65,16 @@
 .active {
   color: red;
   font-weight: bold;
+}
+
+/* Hide delete buttons by default */
+.delete-btn {
+  visibility: hidden;
+}
+
+/* Show delete button on hover */
+.item:hover .delete-btn,
+.team-item:hover .delete-btn {
+  visibility: visible;
+  cursor:pointer;
 }

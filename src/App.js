@@ -1,62 +1,63 @@
 import { useRef, useState, useEffect } from 'preact/hooks';
 import { h } from 'preact';
 import './App.css';
+import BackendUI from './BackendUI.js';
 
 // Separate data structure for categories and topics
-const categoriesWithTopics = [
-  {
-    categoryName: "NBA Legends",
-    topics: [
-      { title: "Michael Jordan: The Greatest of All Time", isActive: false },
-      { title: "Kobe Bryant's Legacy", isActive: false },
-      { title: "Magic Johnson and Showtime Lakers", isActive: false },
-      { title: "Larry Bird's Impact on the NBA", isActive: false },
-    ]
-  },
-  {
-    categoryName: "Famous Teams",
-    topics: [
-      { title: "1996 Chicago Bulls: The 72-10 Record", isActive: false },
-      { title: "Golden State Warriors: The Splash Brothers Era", isActive: false },
-    ]
-  },
-  {
-    categoryName: "International Basketball",
-    topics: [
-      { title: "The Growth of Basketball Worldwide", isActive: false },
-      { title: "FIBA World Cup Highlights", isActive: false },
-    ]
-  },
-  {
-    categoryName: "Iconic Moments",
-    topics: [
-      { title: "LeBron James' Block in 2016 Finals", isActive: false },
-      { title: "Ray Allen's Clutch Three in 2013 Finals", isActive: false },
-      { title: "Derrick Rose: Youngest MVP", isActive: false },
-      { title: "Vince Carter's Dunk Contest Victory", isActive: false },
-    ]
-  }
-];
+// const categoriesWithTopics = [
+//   {
+//     categoryName: "NBA Legends",
+//     topics: [
+//       { title: "Michael Jordan: The Greatest of All Time", isActive: false },
+//       { title: "Kobe Bryant's Legacy", isActive: false },
+//       { title: "Magic Johnson and Showtime Lakers", isActive: false },
+//       { title: "Larry Bird's Impact on the NBA", isActive: false },
+//     ]
+//   },
+//   {
+//     categoryName: "Famous Teams",
+//     topics: [
+//       { title: "1996 Chicago Bulls: The 72-10 Record", isActive: false },
+//       { title: "Golden State Warriors: The Splash Brothers Era", isActive: false },
+//     ]
+//   },
+//   {
+//     categoryName: "International Basketball",
+//     topics: [
+//       { title: "The Growth of Basketball Worldwide", isActive: false },
+//       { title: "FIBA World Cup Highlights", isActive: false },
+//     ]
+//   },
+//   {
+//     categoryName: "Iconic Moments",
+//     topics: [
+//       { title: "LeBron James' Block in 2016 Finals", isActive: false },
+//       { title: "Ray Allen's Clutch Three in 2013 Finals", isActive: false },
+//       { title: "Derrick Rose: Youngest MVP", isActive: false },
+//       { title: "Vince Carter's Dunk Contest Victory", isActive: false },
+//     ]
+//   }
+// ];
 
 // Initial seeds/names hardcoded by the user
-const teams = [
-  { seed: 1, name: "Lakers" },
-  { seed: 2, name: "Celtics" },
-  { seed: 3, name: "Bulls" },
-  { seed: 4, name: "Heat" },
-  { seed: 5, name: "Warriors" },
-  { seed: 6, name: "Spurs" },
-  { seed: 7, name: "Rockets" },
-  { seed: 8, name: "Nets" },
-  { seed: 9, name: "Jonnhy" },
-  { seed: 10, name: "Rohnny" },
-  { seed: 11, name: "Donny" },
-  { seed: 12, name: "Koni" },
-  { seed: 13, name: "Moni" },
-  { seed: 14, name: "CHewbacca" },
-  { seed: 15, name: "Bakaka" },
-  { seed: 16, name: "Ratata" },
-];
+// const teams = [
+//   { seed: 1, name: "Lakers" },
+//   { seed: 2, name: "Celtics" },
+//   { seed: 3, name: "Bulls" },
+//   { seed: 4, name: "Heat" },
+//   { seed: 5, name: "Warriors" },
+//   { seed: 6, name: "Spurs" },
+//   { seed: 7, name: "Rockets" },
+//   { seed: 8, name: "Nets" },
+//   { seed: 9, name: "Jonnhy" },
+//   { seed: 10, name: "Rohnny" },
+//   { seed: 11, name: "Donny" },
+//   { seed: 12, name: "Koni" },
+//   { seed: 13, name: "Moni" },
+//   { seed: 14, name: "CHewbacca" },
+//   { seed: 15, name: "Bakaka" },
+//   { seed: 16, name: "Ratata" },
+// ];
 
 // Calculates total rounds needed for the tournament
 const totalRoundsNeeded = (teamCount) => {
@@ -107,38 +108,40 @@ const createInitialMatchups = (teams) => {
 };
 
 const App = () => {
+  const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
+  const [teams, setTeams] = useState([]);
   const pregeneratedRounds = pregenerateRounds(teams.length);
   const updatedFirstRoundMatchups = createInitialMatchups(teams);
-  pregeneratedRounds[0].brackets = updatedFirstRoundMatchups;
+  if (pregeneratedRounds.length > 0) {
+    pregeneratedRounds[0].brackets = updatedFirstRoundMatchups
+  }
 
   const [rounds, setRounds] = useState(pregeneratedRounds);
   const [currentRound, setCurrentRound] = useState(0);
 
-  // Combine topics and brackets for cycling
   const flatItems = [
     ...categoriesWithTopics.flatMap(category => category.topics),
     ...rounds.flatMap(round => round.brackets),
   ];
-  const [activeItem, setActiveItem] = useState(flatItems[0]);
+  const [activeItem, setActiveItem] = useState(flatItems[0] || {});
+  // Functions to manage Backend UI inputs
+  const handleCategoryTopicChange = (newCategoriesWithTopics) => {
+    setCategoriesWithTopics(newCategoriesWithTopics);
+  };
 
-  // Function to cycle active topic/bracket
-  const cycleActiveItem = (direction) => {
-    const currentIndex = flatItems.findIndex(item => item === activeItem);
-    let nextIndex = currentIndex;
-
-    if (direction === 'forward') {
-      nextIndex = (currentIndex + 1) % flatItems.length;
-    } else if (direction === 'backward') {
-      nextIndex = (currentIndex - 1 + flatItems.length) % flatItems.length;
-    }
-
-    setActiveItem(flatItems[nextIndex]);
-    // After setting the new active item, scroll to its header
-    scrollToActiveHeader(flatItems[nextIndex]);
+  const handleTeamsChange = (newTeams) => {
+    setTeams(newTeams);
+    const newRounds = pregenerateRounds(newTeams.length);
+    const firstRoundMatchups = createInitialMatchups(newTeams);
+    if (newRounds[0]) newRounds[0].brackets = firstRoundMatchups;
+    setRounds(newRounds);
+    setCurrentRound(0);
+    setActiveItem(firstRoundMatchups[0] || {});
   };
 
   // Additional function to scroll to the active item's header
   const scrollToActiveHeader = (activeItem) => {
+    if (!activeItem) return;
     let headerId = '';
     if ('title' in activeItem) {
       // It's a topic, find its category
@@ -157,6 +160,24 @@ const App = () => {
       }
     }
   };
+
+  // Function to cycle active topic/bracket
+  const cycleActiveItem = (direction) => {
+    const currentIndex = flatItems.findIndex(item => item === activeItem);
+    let nextIndex = currentIndex;
+
+    if (direction === 'forward') {
+      nextIndex = (currentIndex + 1) % flatItems.length;
+    } else if (direction === 'backward') {
+      nextIndex = (currentIndex - 1 + flatItems.length) % flatItems.length;
+    }
+
+    setActiveItem(flatItems[nextIndex]);
+    // After setting the new active item, scroll to its header
+    scrollToActiveHeader(flatItems[nextIndex]);
+  };
+
+
 
 
 
@@ -240,11 +261,14 @@ const App = () => {
 
   return (
     <div id="main-container">
+      <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} />
       <Sidebar categoriesWithTopics={categoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
       <BottomBar activeItem={activeItem} />
     </div>
   );
 };
+
+
 
 const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader }) => {
   // Ref for the sidebar container
