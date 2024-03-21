@@ -113,7 +113,6 @@ const App = () => {
 
   const [rounds, setRounds] = useState(pregeneratedRounds);
   const [currentRound, setCurrentRound] = useState(0);
-  const [currentMatchup, setCurrentMatchup] = useState(0);
 
   // Combine topics and brackets for cycling
   const flatItems = [
@@ -146,28 +145,27 @@ const App = () => {
     return updatedRounds;
   };
 
-  // !TODO you can't modify or undo winners once selected. and if you press left/right on a winner, it actually triggers the select winner for the next round.
   const selectWinner = (winnerIndex) => {
     if ('matchup' in activeItem) { // Ensure we're working with a matchup
       let updatedRounds = [...rounds];
-      updatedRounds[currentRound].brackets[currentMatchup].winner = winnerIndex;
-      
-      // Check if all matchups in the current round have winners to proceed to update the future round
-      const allDecided = updatedRounds[currentRound].brackets.every(bracket => bracket.winner !== null);
-      if (allDecided) {
-        updatedRounds = updateFutureRounds(updatedRounds, currentRound);
-        setCurrentRound(currentRound + 1);
-        setCurrentMatchup(0);
-        // Optionally update activeItem to the first matchup of the next round or reset to the first topic
-        // setActiveItem(updatedRounds[currentRound + 1] ? updatedRounds[currentRound + 1].brackets[0] : flatItems[0]);
-      } else {
-        let nextMatchup = (currentMatchup + 1) % updatedRounds[currentRound].brackets.length;
-        setCurrentMatchup(nextMatchup);
-        // Update activeItem to the next matchup in the current round
-        setActiveItem(updatedRounds[currentRound].brackets[nextMatchup]);
+      // Find the round of the active matchup
+      const activeRoundIndex = updatedRounds.findIndex(round =>
+        round.brackets.some(bracket => bracket === activeItem));
+  
+      if (activeRoundIndex === currentRound) { // Act only if the active matchup is in the current round
+        const activeMatchupIndex = updatedRounds[activeRoundIndex].brackets.findIndex(bracket => bracket === activeItem);
+        updatedRounds[activeRoundIndex].brackets[activeMatchupIndex].winner = winnerIndex;
+        
+        // Logic to update future rounds and potentially advance the current round
+        const allDecided = updatedRounds[currentRound].brackets.every(bracket => bracket.winner !== null);
+        if (allDecided) {
+          updatedRounds = updateFutureRounds(updatedRounds, currentRound);
+          setCurrentRound(currentRound + 1);
+          // Optionally, update activeItem here as well
+          // setActiveItem(updatedRounds[currentRound + 1] ? updatedRounds[currentRound + 1].brackets[0] : flatItems[0]);
+        }
+        setRounds(updatedRounds);
       }
-      
-      setRounds(updatedRounds);
     }
   };
 
@@ -205,15 +203,15 @@ const App = () => {
       } else if (e.key === "ArrowUp") {
         cycleActiveItem('backward');
       } else if (e.key === "ArrowRight") {
-        selectWinner(0);
-      } else if (e.key === "ArrowLeft") {
         selectWinner(1);
+      } else if (e.key === "ArrowLeft") {
+        selectWinner(0);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [activeItem, currentMatchup, currentRound, rounds]);
+  }, [activeItem, currentRound, rounds]);
 
   return (
     <div id="main-container">

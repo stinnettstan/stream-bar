@@ -1,5 +1,9 @@
 ## Info 
 This is a Preact (smaller version of React) project, written in jsx/css. As per [specs](https://docs.google.com/document/d/18r2v2RA5RsN_dcxmPuq7agm58Hu5MV81Q3RhO4tAF-E/edit)
+ ### Gotchas / Design Decisions
+ - A winner can be changed, but only if the current round hasn't ended(which is triggered when all matchups of current round are complete)
+ - The entries of the next round are generated only at the end of the current round. 
+    Initially I did this because I thought the high seeds continue to be matched with the low seed in the next rounds, but apparently not lol. I guess it maintains some level of suspense? not that hard to change.
 
 ## Get Started 
 ```
