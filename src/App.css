@@ -32,7 +32,7 @@
   right: 0;
   top: 0; /* Adjusted to align with the top of the container */
   width: 330px;
-  height: 1080px; /* May need adjustment depending on the bottom bar's position */
+  height: 895px; /* May need adjustment depending on the bottom bar's position */
   z-index: 2; /* Higher z-index ensures it overlays the bottom bar */
   overflow-y: auto;
   background-color: aliceblue;
@@ -41,7 +41,7 @@
 #bottom-bar {
   position: absolute;
   bottom: 0;
-  width: 1920px;
+  width: 1590px;
   height: 185px;
   z-index: 1; /* Lower z-index places it beneath the sidebar */
   display: flex;
