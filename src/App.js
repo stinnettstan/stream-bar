@@ -268,8 +268,6 @@ const App = () => {
   );
 };
 
-
-
 const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader }) => {
   // Ref for the sidebar container
   const sidebarRef = useRef(null);

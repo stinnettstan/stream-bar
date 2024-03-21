@@ -23,7 +23,7 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 
 [] Three-part sidebar- with intro topics, (optional brackets), end topics
 
-[] "Backend" UI for easy input of topics/categories/seeds easy
+[x] "Backend" UI for easy input of topics/categories/seeds easy
 
 [] Styling to make everything look good
 
