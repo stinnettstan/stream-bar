@@ -13,7 +13,7 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 ## Progress
 [-] Topic UI
   - [x] Topic cycles up and down with an active topic
-  - [] Bottom bar acts as top of stack instead of mirroring sidebar's active item
+  - ~~[] Bottom bar acts as top of stack instead of mirroring sidebar's active item~~
 
 [-] Bracket UI
   - [x] Autogenerate appropriate number of rounds given 2-16 seeds
@@ -28,6 +28,7 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 [] Styling to make everything look good
 
  ### Gotchas / Design Decisions
+ - I think bottom bar mirroring the active item of the sidebar, plus auto-scrolling to the active category/round is less confusing than a head-pointer/stack approach, especially for the brackets.
  - A winner can be changed, but only if the current round hasn't ended(which is triggered when all matchups of current round are complete)
  - The entries of the next round are generated only at the end of the current round. 
     Initially I did this because I thought the high seeds continue to be matched with the low seed in the next rounds, but apparently not lol. I guess it maintains some level of suspense? not that hard to change.
