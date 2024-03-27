@@ -11,21 +11,22 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 ```
 
 ## Progress
-[-] Topic UI
+- [-] Topic UI
   - [x] Topic cycles up and down with an active topic
   - ~~[] Bottom bar acts as top of stack instead of mirroring sidebar's active item~~
 
-[-] Bracket UI
+- [-] Bracket UI
   - [x] Autogenerate appropriate number of rounds given 2-16 seeds
   - [x] appropriately match seeds.
   - [] play-in tournament pre-round that provides 2 extra seeds.
   - [] logic can handle 18 seeds total
 
-[] Three-part sidebar- with intro topics, (optional brackets), end topics
+- [x] Three-part sidebar- with intro topics, (optional brackets), end topics
 
-[x] "Backend" UI for easy input of topics/categories/seeds easy
+- [x] "Backend" UI for easy input of topics/categories/seeds easy
+  - [] inputting any section is optional, not every huddle might have them
 
-[] Styling to make everything look good
+- [] Styling to make everything look good
 
  ### Gotchas / Design Decisions
  - I think bottom bar mirroring the active item of the sidebar, plus auto-scrolling to the active category/round is less confusing than a head-pointer/stack approach, especially for the brackets.

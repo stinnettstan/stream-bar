@@ -2,8 +2,9 @@ import { useState } from 'preact/hooks';
 import { h } from 'preact';
 
 
-const BackendUI = ({ onCategoriesWithTopicsChange, onTeamsChange }) => {
+const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange }) => {
     const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
+    const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
     const [teamSeed, setTeamSeed] = useState('');
     const [teamName, setTeamName] = useState('');
     const [teams, setTeams] = useState([]);
@@ -33,6 +34,33 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onTeamsChange }) => {
         updatedCategories[categoryIndex].topics[topicIndex].title = newTitle;
         setCategoriesWithTopics(updatedCategories);
     };
+    // Add new end category
+    const handleAddNewEndCategory = () => {
+        setEndCategoriesWithTopics([...endCategoriesWithTopics, { categoryName: '', topics: [] }]);
+    };
+
+    // Update end category name
+    const handleEndCategoryNameChange = (index, newName) => {
+        const updatedEndCategories = [...endCategoriesWithTopics];
+        updatedEndCategories[index].categoryName = newName;
+        setEndCategoriesWithTopics(updatedEndCategories);
+    };
+
+    // Add new topic to a specific end category
+    const handleAddNewEndTopic = (categoryIndex) => {
+        const updatedEndCategories = [...endCategoriesWithTopics];
+        updatedEndCategories[categoryIndex].topics.push({ title: '', isActive: false });
+        setEndCategoriesWithTopics(updatedEndCategories);
+    };
+
+    // Update end topic title
+    const handleEndTopicTitleChange = (categoryIndex, topicIndex, newTitle) => {
+        const updatedEndCategories = [...endCategoriesWithTopics];
+        updatedEndCategories[categoryIndex].topics[topicIndex].title = newTitle;
+        setEndCategoriesWithTopics(updatedEndCategories);
+    };
+
+    // !TODO make the team name editable once entered.
 
     // Add new team with validation for seed uniqueness
     const handleAddTeam = () => {
@@ -54,6 +82,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onTeamsChange }) => {
             return;
         }
         onCategoriesWithTopicsChange(categoriesWithTopics.filter(category => category.categoryName));
+        onEndCategoriesWithTopicsChange(endCategoriesWithTopics.filter(category => category.categoryName));
         onTeamsChange(teams);
     };
     // Delete category by index
@@ -70,6 +99,20 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onTeamsChange }) => {
         setCategoriesWithTopics(updatedCategories);
     };
 
+    // Delete end category by index
+    const handleDeleteEndCategory = (categoryIndex) => {
+        const updatedEndCategories = [...endCategoriesWithTopics];
+        updatedEndCategories.splice(categoryIndex, 1);
+        setEndCategoriesWithTopics(updatedEndCategories);
+    };
+
+    // Delete end topic from a specific category
+    const handleDeleteEndTopic = (categoryIndex, topicIndex) => {
+        const updatedEndCategories = [...endCategoriesWithTopics];
+        updatedEndCategories[categoryIndex].topics.splice(topicIndex, 1);
+        setEndCategoriesWithTopics(updatedEndCategories);
+    };
+
     // Delete team by index
     const handleDeleteTeam = (teamIndex) => {
         const updatedTeams = [...teams];
@@ -79,8 +122,8 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onTeamsChange }) => {
 
     // Component return remains mostly unchanged, with additions for delete functionality...
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ flexBasis: '48%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '1590px', maxHeight: '895px', paddingLeft: '30px', paddingRight: '30px'}}>
+            <div style={{ flexBasis: '48%'}}>
                 <h2>Manage Categories and Topics</h2>
                 {categoriesWithTopics.map((category, categoryIndex) => (
                     <div key={categoryIndex} className="item">
@@ -136,11 +179,46 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onTeamsChange }) => {
                         <button onClick={handleAddTeam}>Add Team</button>
                     </li>
                 </ul>
-
             </div>
-
+            <div style={{ flexBasis: '48%' }}>
+                <h2>Manage End Categories and Topics</h2>
+                {endCategoriesWithTopics.map((category, categoryIndex) => (
+                    <div key={categoryIndex} className="item">
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                value={category.categoryName}
+                                onChange={(e) => handleEndCategoryNameChange(categoryIndex, e.target.value)}
+                                placeholder="End Category Name"
+                            />
+                            <span className="delete-btn" onClick={() => handleDeleteEndCategory(categoryIndex)} style={{ marginLeft: '10px', cursor: 'pointer' }}>❌</span>
+                        </div>
+                        <ul>
+                            {category.topics.map((topic, topicIndex) => (
+                                <li key={topicIndex} className="item">
+                                    <input
+                                        type="text"
+                                        value={topic.title}
+                                        onChange={(e) => handleEndTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
+                                        placeholder="End Topic Title"
+                                    />
+                                    <span className="delete-btn" onClick={() => handleDeleteEndTopic(categoryIndex, topicIndex)} style={{ marginLeft: '10px', cursor: 'pointer' }}>❌</span>
+                                </li>
+                            ))}
+                            <li key="add-end-topic" style={{ listStyleType: 'none' }}>
+                                <button onClick={() => handleAddNewEndTopic(categoryIndex)} style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}>
+                                    + Add End Topic
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                ))}
+                <button onClick={handleAddNewEndCategory} style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginTop: '10px' }}>
+                    + Add End Category
+                </button>
+            </div>
             <div id="save-button-container">
-                <button onClick={handleSave} style={{ padding: '10px 20px', fontSize: '16px' }}>
+                <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: 'aquamarine',fontSize: '16px' }}>
                     Save All Changes
                 </button>
             </div>

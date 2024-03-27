@@ -109,6 +109,7 @@ const createInitialMatchups = (teams) => {
 
 const App = () => {
   const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
+  const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
   const [teams, setTeams] = useState([]);
   const pregeneratedRounds = pregenerateRounds(teams.length);
   const updatedFirstRoundMatchups = createInitialMatchups(teams);
@@ -122,11 +123,20 @@ const App = () => {
   const flatItems = [
     ...categoriesWithTopics.flatMap(category => category.topics),
     ...rounds.flatMap(round => round.brackets),
+    ...endCategoriesWithTopics.flatMap(category => category.topics),
   ];
+
   const [activeItem, setActiveItem] = useState(flatItems[0] || {});
+
   // Functions to manage Backend UI inputs
   const handleCategoryTopicChange = (newCategoriesWithTopics) => {
     setCategoriesWithTopics(newCategoriesWithTopics);
+    setActiveItem(flatItems[0] || {});
+  };
+
+  const handleEndCategoriesWithTopicsChange = (newEndCategoriesWithTopics) => {
+    setEndCategoriesWithTopics(newEndCategoriesWithTopics);
+    setActiveItem(flatItems[0] || {});
   };
 
   const handleTeamsChange = (newTeams) => {
@@ -136,29 +146,56 @@ const App = () => {
     if (newRounds[0]) newRounds[0].brackets = firstRoundMatchups;
     setRounds(newRounds);
     setCurrentRound(0);
-    setActiveItem(firstRoundMatchups[0] || {});
+    setActiveItem(flatItems[0] || {});
+    // setActiveItem(firstRoundMatchups[0] || {});
   };
 
   // Additional function to scroll to the active item's header
   const scrollToActiveHeader = (activeItem) => {
     if (!activeItem) return;
     let headerId = '';
-    if ('title' in activeItem) {
-      // It's a topic, find its category
+
+    // It's a topic in the initial categories
+    if ('title' in activeItem && categoriesWithTopics.some(cat => cat.topics.includes(activeItem))) {
       const category = categoriesWithTopics.find(cat => cat.topics.includes(activeItem));
       headerId = `header-${category.categoryName}`;
-    } else if ('matchup' in activeItem) {
-      // It's a matchup, find its round
+    }
+    // It's a topic in the end categories
+    else if ('title' in activeItem && endCategoriesWithTopics.some(cat => cat.topics.includes(activeItem))) {
+      const category = endCategoriesWithTopics.find(cat => cat.topics.includes(activeItem));
+      headerId = `header-${category.categoryName}-end`; // Ensure this ID format is unique and used when rendering end category headers
+    }
+    // It's a matchup
+    else if ('matchup' in activeItem) {
       const round = rounds.find(r => r.brackets.includes(activeItem));
       headerId = `header-${round.name}`;
     }
-    // If we have a valid headerId, scroll to it
     if (headerId) {
       const headerElement = document.getElementById(headerId);
-      if (headerElement) {
-        headerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const sidebarContainer = document.getElementById('right-sidebar'); // Assuming this is the ID of your sidebar
+
+      if (headerElement && sidebarContainer) {
+        // Use offsetTop to get the distance from the header element to the top of its offsetParent (sidebar)
+        const scrollToPosition = headerElement.offsetTop;
+
+        // Scroll the sidebar container to the header element's top offset
+        sidebarContainer.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
       }
     }
+    // ? Below approach scrolls to activeItem, not the header... I think
+    // if (headerId) {
+    //   const headerElement = document.getElementById(headerId);
+    //   if (headerElement) {
+    //     const container = document.getElementById('right-sidebar'); // Assuming the container has an ID or reference
+    //     if (container) {
+    //       const headerTop = headerElement.getBoundingClientRect().top;
+    //       const containerTop = container.getBoundingClientRect().top;
+    //       const scrollPosition = headerTop - containerTop + container.scrollTop;
+
+    //       container.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+    //     }
+    //   }
+    // }
   };
 
   // Function to cycle active topic/bracket
@@ -221,6 +258,7 @@ const App = () => {
     const flatItemsUpdate = [
       ...categoriesWithTopics.flatMap(category => category.topics),
       ...rounds.flatMap(round => round.brackets),
+      ...endCategoriesWithTopics.flatMap(category => category.topics),
     ];
 
     // Improved check for the current activeItem's existence in the updated lists
@@ -239,7 +277,7 @@ const App = () => {
     if (!activeExistsInUpdated) {
       setActiveItem(flatItemsUpdate[0]); // Reset to the first available item
     }
-  }, [rounds, categoriesWithTopics]);
+  }, [rounds, categoriesWithTopics, endCategoriesWithTopics]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -261,14 +299,14 @@ const App = () => {
 
   return (
     <div id="main-container">
-      <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} />
-      <Sidebar categoriesWithTopics={categoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
+      <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} />
+      <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
       <BottomBar activeItem={activeItem} />
     </div>
   );
 };
 
-const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader }) => {
+const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader }) => {
   // Ref for the sidebar container
   const sidebarRef = useRef(null);
 
@@ -316,6 +354,21 @@ const Sidebar = ({ categoriesWithTopics, rounds, activeItem, setActiveItem, scro
                 {bracket.matchup[0].name !== '?' ?
                   `${bracket.matchup[0].seed}. ${bracket.matchup[0].name} vs. ${bracket.matchup[1].seed}. ${bracket.matchup[1].name}` :
                   "? vs ?"}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      {endCategoriesWithTopics.map((category, categoryIndex) => (
+        <div key={`end-topic-${categoryIndex}`}>
+          <h3 id={`header-${category.categoryName}-end`}>{category.categoryName}</h3>
+          <ul>
+            {category.topics.map((topic, topicIndex) => (
+              <li key={`end-topic-item-${topicIndex}`}
+                className={topic === activeItem ? 'active' : ''}
+                onClick={() => setActiveItem(topic)}>
+                {topic.title}
               </li>
             ))}
           </ul>
