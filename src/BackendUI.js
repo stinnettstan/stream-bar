@@ -75,16 +75,32 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
         }
     };
 
-    // Validate and save data
+    // Validate and save data with at least one section filled
     const handleSave = () => {
-        if (teams.length % 2 !== 0) {
+        // Check if at least one section is not empty
+        const isAnySectionFilled = categoriesWithTopics.some(category => category.categoryName) ||
+            endCategoriesWithTopics.some(category => category.categoryName) ||
+            teams.length > 0;
+
+        // Validate the filled sections further if necessary (e.g., teams must be an even number)
+        const areTeamsValid = teams.length % 2 === 0;
+
+        if (!isAnySectionFilled) {
+            alert("Please fill in at least one section before saving.");
+            return;
+        }
+
+        if (!areTeamsValid) {
             alert("Please ensure the number of teams is even before saving.");
             return;
         }
+
+        // Proceed with saving if the validations pass
         onCategoriesWithTopicsChange(categoriesWithTopics.filter(category => category.categoryName));
         onEndCategoriesWithTopicsChange(endCategoriesWithTopics.filter(category => category.categoryName));
         onTeamsChange(teams);
     };
+
     // Delete category by index
     const handleDeleteCategory = (categoryIndex) => {
         const updatedCategories = [...categoriesWithTopics];
@@ -122,8 +138,8 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
 
     // Component return remains mostly unchanged, with additions for delete functionality...
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '1590px', maxHeight: '895px', paddingLeft: '30px', paddingRight: '30px'}}>
-            <div style={{ flexBasis: '48%'}}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '1590px', maxHeight: '895px', paddingLeft: '30px', paddingRight: '30px' }}>
+            <div style={{ flexBasis: '48%' }}>
                 <h2>Manage Categories and Topics</h2>
                 {categoriesWithTopics.map((category, categoryIndex) => (
                     <div key={categoryIndex} className="item">
@@ -218,7 +234,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                 </button>
             </div>
             <div id="save-button-container">
-                <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: 'aquamarine',fontSize: '16px' }}>
+                <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: 'aquamarine', fontSize: '16px' }}>
                     Save All Changes
                 </button>
             </div>

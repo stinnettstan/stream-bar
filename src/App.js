@@ -83,6 +83,7 @@ const generateRoundName = (numTeams) => {
 
 // Pre-generates all rounds with placeholders
 const pregenerateRounds = (teamCount) => {
+  if (teamCount <= 0) return [];
   let rounds = [];
   let matchupsCount = teamCount / 2;
   for (let i = 0; i < totalRoundsNeeded(teamCount); i++) {
@@ -97,6 +98,7 @@ const pregenerateRounds = (teamCount) => {
 };
 
 const createInitialMatchups = (teams) => {
+  if (teams.length === 0) return [];
   // Sort teams by seed in ascending order
   const sortedTeams = [...teams].sort((a, b) => a.seed - b.seed);
 
@@ -200,6 +202,7 @@ const App = () => {
 
   // Function to cycle active topic/bracket
   const cycleActiveItem = (direction) => {
+    if (!flatItems.length) return; // Early return if there are no items to cycle through
     const currentIndex = flatItems.findIndex(item => item === activeItem);
     let nextIndex = currentIndex;
 
@@ -229,7 +232,7 @@ const App = () => {
   };
 
   const selectWinner = (winnerIndex) => {
-    if ('matchup' in activeItem) { // Ensure we're working with a matchup
+    if ('matchup' in activeItem && rounds.length) { // Ensure we're working with a matchup
       let updatedRounds = [...rounds];
       // Find the round of the active matchup
       const activeRoundIndex = updatedRounds.findIndex(round =>
@@ -328,7 +331,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
 
   return (
     <div id="right-sidebar" ref={sidebarRef}>
-      {categoriesWithTopics.map((category, categoryIndex) => (
+      {categoriesWithTopics.length > 0 && categoriesWithTopics.map((category, categoryIndex) => (
         <div key={`topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}`}>{category.categoryName}</h3>
           <ul>
@@ -342,8 +345,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
           </ul>
         </div>
       ))}
-
-      {rounds.map((round, roundIndex) => (
+      {rounds.length > 0 && rounds.map((round, roundIndex) => (
         <div key={`round-${roundIndex}`}>
           <h3 id={`header-${round.name}`}>{round.name}</h3>
           <ul>
@@ -360,7 +362,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
         </div>
       ))}
 
-      {endCategoriesWithTopics.map((category, categoryIndex) => (
+      {endCategoriesWithTopics.length > 0 && endCategoriesWithTopics.map((category, categoryIndex) => (
         <div key={`end-topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}-end`}>{category.categoryName}</h3>
           <ul>
