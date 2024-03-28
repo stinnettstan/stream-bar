@@ -235,7 +235,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
             </div>
             <div id="save-button-container">
                 <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: 'aquamarine', fontSize: '16px' }}>
-                    Save All Changes
+                    Save All Changes (Press B to Hide)
                 </button>
             </div>
         </div>

@@ -115,6 +115,7 @@ const App = () => {
   const [teams, setTeams] = useState([]);
   const pregeneratedRounds = pregenerateRounds(teams.length);
   const updatedFirstRoundMatchups = createInitialMatchups(teams);
+  const [isBackendUiVisible, setIsBackendUiVisible] = useState(true);
   if (pregeneratedRounds.length > 0) {
     pregeneratedRounds[0].brackets = updatedFirstRoundMatchups
   }
@@ -293,6 +294,8 @@ const App = () => {
         selectWinner(1);
       } else if (e.key === "ArrowLeft") {
         selectWinner(0);
+      } else if (e.key === "b") {
+        setIsBackendUiVisible(prev => !prev);
       }
     };
 
@@ -302,7 +305,7 @@ const App = () => {
 
   return (
     <div id="main-container">
-      <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} />
+      {isBackendUiVisible && <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} />}
       <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
       <BottomBar activeItem={activeItem} />
     </div>
