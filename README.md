@@ -24,7 +24,7 @@ This is a Preact (smaller version of React) project, written in jsx/css. As per 
 - [x] Three-part sidebar- with intro topics, (optional brackets), end topics
 
 - [x] "Backend" UI for easy input of topics/categories/seeds easy
-  - [] inputting any section is optional, not every huddle might have them
+  - [x] inputting any section is optional, not every huddle might have them
 
 - [] Styling to make everything look good
 
