@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'preact/hooks';
+import "preact/debug"; // <-- Add this line at the top of your main entry file
 import { h } from 'preact';
 import './App.css';
 import BackendUI from './BackendUI.js';
@@ -171,7 +172,7 @@ const App = () => {
     // It's a matchup
     else if ('matchup' in activeItem) {
       const round = rounds.find(r => r.brackets.includes(activeItem));
-      headerId = `header-${round.name}`;
+      headerId = `header-round-${round.name}`;
     }
     if (headerId) {
       const headerElement = document.getElementById(headerId);
@@ -294,7 +295,8 @@ const App = () => {
         selectWinner(1);
       } else if (e.key === "ArrowLeft") {
         selectWinner(0);
-      } else if (e.key === "b") {
+      } else if (e.key === "b" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault(); // Prevent the default action for Cmd-B/Ctrl-B
         setIsBackendUiVisible(prev => !prev);
       }
     };
@@ -316,6 +318,17 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
   // Ref for the sidebar container
   const sidebarRef = useRef(null);
 
+  const isMatchupActive = (bracket) => {
+    // Assuming activeItem and bracket have matchup property and can be compared
+    if ('matchup' in activeItem && 'matchup' in bracket) {
+      const activeMatchup = activeItem.matchup;
+      const bracketMatchup = bracket.matchup;
+      // Example comparison logic: compare by team names or any other unique identifier
+      return activeMatchup[0].name === bracketMatchup[0].name && activeMatchup[1].name === bracketMatchup[1].name;
+    }
+    return false;
+  };
+
   const adjustBottomPadding = () => {
     if (sidebarRef.current) {
       const sidebar = sidebarRef.current;
@@ -333,7 +346,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
   }, [activeItem]);
 
   return (
-    <div id="right-sidebar" ref={sidebarRef}>
+    <div id="right-sidebar" ref={sidebarRef} className='sidebarBackground'>
       {categoriesWithTopics.length > 0 && categoriesWithTopics.map((category, categoryIndex) => (
         <div key={`topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}`}>{category.categoryName}</h3>
@@ -350,18 +363,27 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
       ))}
       {rounds.length > 0 && rounds.map((round, roundIndex) => (
         <div key={`round-${roundIndex}`}>
-          <h3 id={`header-${round.name}`}>{round.name}</h3>
-          <ul>
+          <h3 id={`header-round-${round.name}`}>{round.name}</h3>
+          <div>
             {round.brackets.map((bracket, bracketIndex) => (
-              <li key={`bracket-item-${bracketIndex}`}
-                className={bracket === activeItem ? 'active' : ''}
-                onClick={() => setActiveItem(bracket)}>
-                {bracket.matchup[0].name !== '?' ?
-                  `${bracket.matchup[0].seed}. ${bracket.matchup[0].name} vs. ${bracket.matchup[1].seed}. ${bracket.matchup[1].name}` :
-                  "? vs ?"}
-              </li>
+              <table id="matchup-table" key={`bracket-item-${bracketIndex}`} className={isMatchupActive(bracket) ? "active-item" : ''} onClick={() => setActiveItem(bracket)}>
+                <tbody>
+                  {[0, 1].map((index) => (
+                    <tr key={index}>
+                      <th scope='row'>{(bracket.matchup[index].seed !== undefined ? `${bracket.matchup[index].seed}.` : `?`)}</th>
+                      <td style={{
+                        minWidth: "100px",
+                        fontWeight: bracket.winner === index ? 'bold' : 'normal',
+                        textDecoration: bracket.winner === index ? 'underline' : 'none',
+                      }}>
+                        {bracket.matchup[index].name !== '?' ? ` ${bracket.matchup[index].name}` : "?"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ))}
-          </ul>
+          </div>
         </div>
       ))}
 
@@ -385,7 +407,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
 
 
 const BottomBar = ({ activeItem }) => {
-  let content = 'Select an item'; // Default message when no item is active
+  let content = ''; // Default message when no item is active
 
   // Determine the content based on the type of the active item
   if (activeItem) {
@@ -395,31 +417,58 @@ const BottomBar = ({ activeItem }) => {
     } else if (activeItem.matchup) {
       // It's a bracket
       const { matchup, winner } = activeItem;
-      const matchupContent = matchup[0].name !== '?' ? `${matchup[0].seed}. ${matchup[0].name} vs. ${matchup[1].seed}. ${matchup[1].name}` : "? vs ?";
 
-      // Prepare styled content to highlight the winner
-      content = (
-        <span>
-          {matchup.map((team, index) => (
-            <span key={index} style={winner === index ? { fontWeight: 'bold', textDecoration: 'underline' } : {}}>
-              {index > 0 ? ' vs. ' : ''}{team.seed}. {team.name}
-            </span>
-          ))}
-        </span>
-      );
-
-      // If it's a placeholder match, revert to the simple text display
+      // Check if it's a placeholder match
       if (matchup[0].name === '?') {
-        content = matchupContent;
+        content = "? vs ?";
+      } else {
+        // Construct matchup cells including "VS" text for Preact
+        const cells = [];
+        matchup.forEach((team, index) => {
+          // Team cell
+          cells.push(
+            <td key={`team-${index}`} style={{
+              border: 'none',
+              // border: '3px solid white',
+              padding: '8px',
+              fontWeight: winner === index ? 'bold' : 'normal',
+              // textDecoration: winner === index ? 'underline' : 'none',
+              color: winner === index ? '#FFC72C' : 'inherit',
+              textAlign: 'center'
+            }}>
+              {team.seed}. {team.name}
+            </td>
+          );
+
+          // "VS" cell, except after the last team
+          if (index < matchup.length - 1) {
+            cells.push(
+              <td key={`vs-${index}`} className='bottom-vs'>
+                VS.
+              </td>
+            );
+          }
+        });
+
+        // Use a table to display the matchup with "VS" text
+        content = (
+          <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none'}}>
+            <tbody>
+              <tr>{cells}</tr>
+            </tbody>
+          </table>
+        );
       }
     }
   }
 
   return (
     <div id="bottom-bar">
-      <div id="active-item">{typeof content === 'string' ? content : content}</div>
+      <div id="active-item">{content}</div>
     </div>
   );
 };
+
+
 
 export default App;

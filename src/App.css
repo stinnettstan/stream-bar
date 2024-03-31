@@ -1,31 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&display=swap');
+
 /* Apply border-box to all elements */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
+
 #main-container {
-  position: relative; /* Ensures child elements are positioned relative to this container */
+  position: relative;
+  /* Ensures child elements are positioned relative to this container */
   width: 1920px;
   height: 1080px;
   max-height: 1080px;
-  overflow-y: hidden; /* !TODO make sure the outer containers dont scroll. currently this fix isn't working */
+  overflow-y: hidden;
+  /* !TODO make sure the outer containers dont scroll. currently this fix isn't working */
 }
 
 #backend-ui-container {
-  margin-right: 330px; /* Same as sidebar width */
-  padding-bottom: 185px; /* Same as bottom bar height */
-  height: calc(100% - 185px); /* Adjust height to exclude bottom bar */
-  overflow: auto; /* For scrolling, if needed */
+  margin-right: 330px;
+  /* Same as sidebar width */
+  padding-bottom: 185px;
+  /* Same as bottom bar height */
+  height: calc(100% - 185px);
+  /* Adjust height to exclude bottom bar */
+  overflow: auto;
+  /* For scrolling, if needed */
+}
+
+[id^="header-"] {
+  display: flex;
+  font-family: 'Bebas Neue', sans-serif;
+  color: black;
+  font-size: 1.7em;
+
+}
+
+[id^="header-round-"] {
+  font-family: "Bebas Neue", sans-serif;
+}
+
+table.active-item th, table.active-item td{
+  border: 3px solid #FFC72C		;
+}
+
+#matchup-table {
+  border-collapse: collapse;
+  border: 2px solid rgb(140 140 140);
+  /* font-family: sans-serif; */
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+/* table {
+  border-collapse: collapse;
+  border: 2px solid rgb(140 140 140); */
+  /* font-family: sans-serif; */
+  /* font-size: 1.3rem;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+} */
+
+th,
+td {
+  border: 3px solid rgb(160 160 160);
+  padding: 8px 10px;
+}
+
+ul {
+  color: black;
+  font-size: 1.3em;
+  font-family: 'EB Garamond', serif;
+  font-weight: 400;
+  list-style-type: square;
+
+}
+
+[id^="rounds-"] {
+  display: flex;
+  font-family: 'EB Garamond';
+  color: black;
+  font-size: 2em;
+
+}
+
+.active {
+  color: #FFC72C;
+  font-weight: bold;
+}
+
+#active-item {
+  /* font-size: 10px; */
+}
+
+
+/* Styles for individual matchup items */
+.matchup-item {
+  border: 2px solid #28a745;
+  /* Example green border */
+  margin: 5px;
+  /* Space above and below each matchup item */
+  padding: 10px;
+  width: 80%;
+  /* Adjust width as needed */
+  background-color: #e9f8eb;
+  /* Light background */
+  border-radius: 5px;
+  /* Rounded corners */
+  text-align: center;
+  /* Center text within the box */
+  position: relative;
+  /* Needed for absolute positioning of the 'VS' overlay */
+  z-index: 1;
+  /* Ensures matchup items are under the 'VS' overlay */
+  font-family: 'Inter', sans-serif;
+}
+
+.bottom-vs {
+  text-align: 'center';
+  padding: '0 15px';
+  font-weight: 'bold';
+  font-family: "Sedgwick Ave Display";
+  font-size: '1.8rem';
+  border: 0px;
+}
+/* Styles for the "VS" text overlay */
+.vs-overlay {
+  position: absolute;
+  top: 50%;
+  /* Center vertically in the middle of the matchup pair container */
+  left: 50%;
+  /* Center horizontally */
+  transform: translate(-50%, -50%);
+  /* Offset the element by half of its width and height */
+  z-index: 1;
+  /* Make sure it's above the other elements */
+}
+
+/* Container for each matchup pair */
+.matchup-pair-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  /* Align items in a row */
+  justify-content: center;
+  /* Center items horizontally */
+  align-items: center;
+  /* Center items vertically */
+  gap: 20px;
+  /* Spacing between elements */
+  margin-bottom: 20px;
+  /* Spacing between each matchup pair container */
 }
 
 #save-button-container {
   display: flex;
   justify-content: center;
   position: absolute;
-  bottom: 195px; /* Adjust based on bottom bar height and desired spacing */
-  width: calc(100% - 330px); /* Adjust width to exclude sidebar */
+  bottom: 195px;
+  /* Adjust based on bottom bar height and desired spacing */
+  width: calc(100% - 330px);
+  /* Adjust width to exclude sidebar */
 }
-#main-container, html, body {
+
+#main-container,
+html,
+body {
   margin: 0;
   padding: 0;
 }
@@ -33,14 +179,23 @@
 #right-sidebar {
   position: absolute;
   right: 0;
-  top: 0; /* Adjusted to align with the top of the container */
+  top: 0;
+  /* Adjusted to align with the top of the container */
   width: 330px;
-  height: 895px; /* May need adjustment depending on the bottom bar's position */
-  z-index: 2; /* Higher z-index ensures it overlays the bottom bar */
+  height: 895px;
+  /* May need adjustment depending on the bottom bar's position */
+  z-index: 2;
+  /* Higher z-index ensures it overlays the bottom bar */
   padding-left: 20px;
   overflow-y: auto;
-  background-color: aliceblue;
+  background-color: whitesmoke;
 
+}
+
+.sidebarBackground {
+  /* background-image: url("./sidebar-bg.jpg"); */
+  background-size: cover;
+  background-position: center;
 }
 
 #bottom-bar {
@@ -48,12 +203,17 @@
   bottom: 0;
   width: 1590px;
   height: 185px;
-  z-index: 1; /* Lower z-index places it beneath the sidebar */
+  z-index: 1;
+  /* Lower z-index places it beneath the sidebar */
   display: flex;
   align-items: center;
-  padding-left: 20px;
-  background-color: yellow;
-  font-size:  40px;
+  padding-left: 40px;
+  background: rgb(29, 70, 162);
+  background: linear-gradient(90deg, rgba(29, 70, 162, 1) 0%, rgba(9, 9, 121, 1) 100%);
+  font-size: 50px;
+  font-weight: bold;
+  font-family: 'Bebas Neue', sans-serif;
+  color: white;
 }
 
 #topic-list li {
@@ -64,13 +224,9 @@
 }
 
 #right-sidebar ul {
-  margin-bottom: 100px;
+  margin-bottom: 50px;
 }
 
-.active {
-  color: red;
-  font-weight: bold;
-}
 
 /* Hide delete buttons by default */
 .delete-btn {
@@ -81,5 +237,5 @@
 .item:hover .delete-btn,
 .team-item:hover .delete-btn {
   visibility: visible;
-  cursor:pointer;
+  cursor: pointer;
 }
