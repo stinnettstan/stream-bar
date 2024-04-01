@@ -376,7 +376,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
       {categoriesWithTopics.length > 0 && categoriesWithTopics.map((category, categoryIndex) => (
         <div key={`topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}`}>{category.categoryName}</h3>
-          <ul>
+          <ul className='category-list'>
             {category.topics.map((topic, topicIndex) => (
               <li key={`topic-item-${topicIndex}`}
                 className={topic === activeItem ? 'active' : ''}
@@ -416,7 +416,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
       {endCategoriesWithTopics.length > 0 && endCategoriesWithTopics.map((category, categoryIndex) => (
         <div key={`end-topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}-end`}>{category.categoryName}</h3>
-          <ul>
+          <ul className='category-list'>
             {category.topics.map((topic, topicIndex) => (
               <li key={`end-topic-item-${topicIndex}`}
                 className={topic === activeItem ? 'active' : ''}
