@@ -188,8 +188,15 @@ body {
   /* Higher z-index ensures it overlays the bottom bar */
   padding-left: 20px;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: whitesmoke;
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer and Edge */
 
+}
+
+#right-sidebar::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari, and Opera */
 }
 
 .sidebarBackground {
