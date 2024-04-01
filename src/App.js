@@ -82,18 +82,24 @@ const generateRoundName = (numTeams) => {
   }
 };
 
+// Util function to generate a simple unique ID
+const generateMatchupId = (roundIndex, matchupIndex) => `round${roundIndex}-matchup${matchupIndex}`;
+
 // Pre-generates all rounds with placeholders
 const pregenerateRounds = (teamCount) => {
   if (teamCount <= 0) return [];
   let rounds = [];
-  let matchupsCount = teamCount / 2;
+  let matchupsCount = teamCount / 2; // Start with the initial number of matchups
   for (let i = 0; i < totalRoundsNeeded(teamCount); i++) {
-    let round = {
+    rounds.push({
       name: generateRoundName(matchupsCount * 2),
-      brackets: Array(matchupsCount).fill().map(() => ({ matchup: [{ name: '?' }, { name: '?' }], winner: null })), // TODO names should be null lol
-    };
-    rounds.push(round);
-    matchupsCount /= 2; // Each subsequent round has half the number of matchups
+      brackets: Array.from({ length: matchupsCount }, (_, index) => ({
+        id: generateMatchupId(i, index),
+        matchup: [{ name: '?' }, { name: '?' }],
+        winner: null
+      })),
+    });
+    matchupsCount = Math.ceil(matchupsCount / 2); // Prepare matchups count for the next round
   }
   return rounds;
 };
@@ -105,7 +111,11 @@ const createInitialMatchups = (teams) => {
 
   let matchups = [];
   for (let i = 0; i < sortedTeams.length / 2; i++) {
-    matchups.push({ matchup: [sortedTeams[i], sortedTeams[sortedTeams.length - 1 - i]], winner: null });
+    matchups.push({
+      id: generateMatchupId(0, i), // Assuming these are first-round matchups
+      matchup: [sortedTeams[i], sortedTeams[sortedTeams.length - 1 - i]],
+      winner: null
+    });
   }
   return matchups;
 };
@@ -171,8 +181,10 @@ const App = () => {
     }
     // It's a matchup
     else if ('matchup' in activeItem) {
-      const round = rounds.find(r => r.brackets.includes(activeItem));
-      headerId = `header-round-${round.name}`;
+      const round = rounds.find(r => r.brackets.some(bracket => bracket.id === activeItem.id));
+      if (round) {
+        headerId = `header-round-${round.name}`;
+      }
     }
     if (headerId) {
       const headerElement = document.getElementById(headerId);
@@ -223,35 +235,56 @@ const App = () => {
 
 
 
-  const updateFutureRounds = (updatedRounds, currentRound) => {
-    if (currentRound + 1 < updatedRounds.length) {
-      // Logic to advance winners to the next round
-      const winners = updatedRounds[currentRound].brackets.map(bracket => bracket.winner !== null ? teams[bracket.matchup[bracket.winner].seed - 1] : null);
-      const nextRoundMatchups = createInitialMatchups(winners.filter(winner => winner !== null));
-      updatedRounds[currentRound + 1].brackets = nextRoundMatchups;
+  const updateFutureRounds = (updatedRounds, currentRoundIndex) => {
+    // Loop through each round starting from the current one to update future rounds
+    for (let i = currentRoundIndex; i < updatedRounds.length - 1; i++) {
+      // Extract winners from the current round
+      const winners = updatedRounds[i].brackets
+        .map(bracket => bracket.winner !== null ? teams.find(team => team.seed === bracket.matchup[bracket.winner].seed) : null)
+        .filter(winner => winner !== null);
+
+      // Prepare for the number of matchups in the next round
+      const nextRoundMatchupsExpected = Math.pow(2, updatedRounds.length - 2 - i);
+      let nextRoundMatchups = [];
+
+      // Create matchups for the next round based on winners available
+      for (let j = 0; j < winners.length; j += 2) {
+        if (winners[j + 1]) {
+          // Pair winners as matchups
+          nextRoundMatchups.push({ matchup: [winners[j], winners[j + 1]], winner: null });
+        } else {
+          // Handle an odd number of winners by adding a placeholder opponent
+          nextRoundMatchups.push({ matchup: [winners[j], { name: '?', seed: undefined }], winner: null });
+        }
+      }
+
+      // Fill in remaining matchups with placeholders if the actual matchups are less than expected
+      while (nextRoundMatchups.length < nextRoundMatchupsExpected) {
+        nextRoundMatchups.push({
+          matchup: [{ name: '?', seed: undefined }, { name: '?', seed: undefined }],
+          winner: null
+        });
+      }
+
+      // Update the next round with either newly created matchups or placeholders
+      updatedRounds[i + 1].brackets = nextRoundMatchups;
     }
+
     return updatedRounds;
   };
 
+
+
   const selectWinner = (winnerIndex) => {
-    if ('matchup' in activeItem && rounds.length) { // Ensure we're working with a matchup
+    if ('matchup' in activeItem && rounds.length) {
       let updatedRounds = [...rounds];
-      // Find the round of the active matchup
-      const activeRoundIndex = updatedRounds.findIndex(round =>
-        round.brackets.some(bracket => bracket === activeItem));
+      const activeRoundIndex = updatedRounds.findIndex(round => round.brackets.some(bracket => bracket.id === activeItem.id));
 
-      if (activeRoundIndex === currentRound) { // Act only if the active matchup is in the current round
-        const activeMatchupIndex = updatedRounds[activeRoundIndex].brackets.findIndex(bracket => bracket === activeItem);
+      if (activeRoundIndex !== -1) {
+        const activeMatchupIndex = updatedRounds[activeRoundIndex].brackets.findIndex(bracket => bracket.id === activeItem.id);
         updatedRounds[activeRoundIndex].brackets[activeMatchupIndex].winner = winnerIndex;
-
-        // Logic to update future rounds and potentially advance the current round
-        const allDecided = updatedRounds[currentRound].brackets.every(bracket => bracket.winner !== null);
-        if (allDecided) {
-          updatedRounds = updateFutureRounds(updatedRounds, currentRound);
-          setCurrentRound(currentRound + 1);
-          // Optionally, update activeItem here as well
-          // setActiveItem(updatedRounds[currentRound + 1] ? updatedRounds[currentRound + 1].brackets[0] : flatItems[0]);
-        }
+        // Update future rounds immediately
+        updatedRounds = updateFutureRounds(updatedRounds, activeRoundIndex, updatedRounds[activeRoundIndex].brackets[activeMatchupIndex]);
         setRounds(updatedRounds);
       }
     }
@@ -319,14 +352,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
   const sidebarRef = useRef(null);
 
   const isMatchupActive = (bracket) => {
-    // Assuming activeItem and bracket have matchup property and can be compared
-    if ('matchup' in activeItem && 'matchup' in bracket) {
-      const activeMatchup = activeItem.matchup;
-      const bracketMatchup = bracket.matchup;
-      // Example comparison logic: compare by team names or any other unique identifier
-      return activeMatchup[0].name === bracketMatchup[0].name && activeMatchup[1].name === bracketMatchup[1].name;
-    }
-    return false;
+    return 'id' in activeItem && bracket.id === activeItem.id;
   };
 
   const adjustBottomPadding = () => {
@@ -365,8 +391,8 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
         <div key={`round-${roundIndex}`}>
           <h3 id={`header-round-${round.name}`}>{round.name}</h3>
           <div>
-            {round.brackets.map((bracket, bracketIndex) => (
-              <table id="matchup-table" key={`bracket-item-${bracketIndex}`} className={isMatchupActive(bracket) ? "active-item" : ''} onClick={() => setActiveItem(bracket)}>
+            {round.brackets.map((bracket) => (
+              <table id="matchup-table" key={bracket.id} className={isMatchupActive(bracket) ? "active-item" : ''} onClick={() => setActiveItem(bracket)}>
                 <tbody>
                   {[0, 1].map((index) => (
                     <tr key={index}>
@@ -452,7 +478,7 @@ const BottomBar = ({ activeItem }) => {
 
         // Use a table to display the matchup with "VS" text
         content = (
-          <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none'}}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none' }}>
             <tbody>
               <tr>{cells}</tr>
             </tbody>
