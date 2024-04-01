@@ -192,7 +192,7 @@ const App = () => {
 
       if (headerElement && sidebarContainer) {
         // Use offsetTop to get the distance from the header element to the top of its offsetParent (sidebar)
-        const scrollToPosition = headerElement.offsetTop;
+        const scrollToPosition = headerElement.offsetTop - 20;
 
         // Scroll the sidebar container to the header element's top offset
         sidebarContainer.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
