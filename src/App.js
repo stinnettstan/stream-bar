@@ -459,44 +459,31 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
     } else if (activeItem.matchup) {
       // It's a bracket
       const { matchup, winner } = activeItem;
-
-      // Check if it's a placeholder match
-      if (matchup[0].name === '?') {
-        content = "? vs ?";
-      } else {
-        // Construct matchup cells including "VS" text for Preact
-        const cells = [];
-        matchup.forEach((team, index) => {
-          // Team cell
-          cells.push(
+      const cells = matchup.map((team, index) => (
             <td key={`team-${index}`} style={{
               border: 'none',
-              // border: '3px solid white',
               padding: '0px 8px',
-              // fontStyle: winner === index ? 'italic' : 'normal',
               fontWeight: 'bold',
               textDecoration: winner === index ? 'underline' : 'none',
               color: winner === index ? '#FFC72C' : 'inherit',
               textAlign: 'center'
             }}>
-              {team.seed}. {team.name}
+          {team.name !== '?' ? `${team.seed}. ${team.name}` : "?"}
             </td>
-          );
+      ));
 
-          // "VS" cell, except after the last team
-          if (index < matchup.length - 1) {
-            cells.push(
-              <td key={`vs-${index}`} className='bottom-vs'>
-                VS.
-              </td>
-            );
+      // Insert "VS" between the teams
+      if (cells.length === 2) {
+        cells.splice(1, 0, <td key="vs" className='bottom-vs'>VS.</td>);
+      } else {
+        // Handle cases where only one team is available for the matchup
+        cells.push(<td key="vs" className='bottom-vs'>VS. ?</td>);
           }
-        });
 
-        // Use a table to display the matchup with "VS" text
+      // Use a div to display the bracket name and a table for the matchup
         content = (
           <div>
-            <h3 style={{marginLeft: '8px'}} className='sectionTitle'>{bracketName || "Matchup"}</h3>
+          <h3 style={{ marginLeft: '8px' }} className='sectionTitle'>{bracketName || "Matchup"}</h3>
             <table style={{ width: '100%' }}>
               <tbody>
                 <tr>{cells}</tr>
@@ -504,7 +491,7 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
             </table>
           </div>
         );
-      }
+
     }
   }
 
