@@ -100,10 +100,6 @@ ul {
   padding-left: 0px;
 }
 
-#active-item {
-  /* font-size: 10px; */
-}
-
 
 /* Styles for individual matchup items */
 .matchup-item {
@@ -128,12 +124,14 @@ ul {
 }
 
 .bottom-vs {
-  text-align: 'center';
-  padding: '0 15px';
-  font-weight: 'bold';
+  /* text-align: 'center'; */
+  /* padding: '0 15px'; */
+  /* font-weight: 'bold'; */
   font-family: "Sedgwick Ave Display";
-  font-size: '1.8rem';
+  /* font-size: '0.8em'; */
   border: 0px;
+  color: white;
+  /* opacity: 0.6; */
 }
 /* Styles for the "VS" text overlay */
 .vs-overlay {
@@ -218,7 +216,9 @@ body {
   z-index: 1;
   /* Lower z-index places it beneath the sidebar */
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
   padding-left: 40px;
   background: rgb(29, 70, 162);
   background: linear-gradient(90deg, rgba(29, 70, 162, 1) 0%, rgba(9, 9, 121, 1) 100%);
@@ -226,6 +226,12 @@ body {
   font-weight: bold;
   font-family: 'Bebas Neue', sans-serif;
   color: white;
+}
+
+.sectionTitle {
+  font-size: 1em;
+  opacity: 0.6;
+  margin-bottom: 0;
 }
 
 #topic-list li {
@@ -240,14 +246,15 @@ body {
 }
 
 
-/* Hide delete buttons by default */
+
 .delete-btn {
-  visibility: hidden;
+  visibility: hidden; /* Hide delete buttons by default */
+  margin-left: '10px';
+  cursor: 'pointer';
 }
 
 /* Show delete button on hover */
 .item:hover .delete-btn,
 .team-item:hover .delete-btn {
   visibility: visible;
-  cursor: pointer;
 }

@@ -86,23 +86,7 @@ const generateRoundName = (numTeams) => {
 const generateMatchupId = (roundIndex, matchupIndex) => `round${roundIndex}-matchup${matchupIndex}`;
 
 // Pre-generates all rounds with placeholders
-const pregenerateRounds = (teamCount) => {
-  if (teamCount <= 0) return [];
-  let rounds = [];
-  let matchupsCount = teamCount / 2; // Start with the initial number of matchups
-  for (let i = 0; i < totalRoundsNeeded(teamCount); i++) {
-    rounds.push({
-      name: generateRoundName(matchupsCount * 2),
-      brackets: Array.from({ length: matchupsCount }, (_, index) => ({
-        id: generateMatchupId(i, index),
-        matchup: [{ name: '?' }, { name: '?' }],
-        winner: null
-      })),
-    });
-    matchupsCount = Math.ceil(matchupsCount / 2); // Prepare matchups count for the next round
-  }
-  return rounds;
-};
+
 
 const createInitialMatchups = (teams) => {
   if (teams.length === 0) return [];
@@ -121,12 +105,36 @@ const createInitialMatchups = (teams) => {
 };
 
 const App = () => {
+
   const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
   const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
   const [teams, setTeams] = useState([]);
+  const [bracketName, setBracketName] = useState([]);
+  const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'QuarterFinals', 'Round of 16']);
+
+  const pregenerateRounds = (teamCount) => {
+    if (teamCount <= 0) return [];
+    let rounds = [];
+    let matchupsCount = teamCount / 2; // Start with the initial number of matchups
+    for (let i = 0; i < totalRoundsNeeded(teamCount); i++) {
+      rounds.push({
+        name: roundNames[(Math.log2(matchupsCount * 2) - 1)],//generateRoundName(matchupsCount * 2),
+        brackets: Array.from({ length: matchupsCount }, (_, index) => ({
+          id: generateMatchupId(i, index),
+          matchup: [{ name: '?' }, { name: '?' }],
+          winner: null
+        })),
+      });
+      matchupsCount = Math.ceil(matchupsCount / 2); // Prepare matchups count for the next round
+    }
+    return rounds;
+  };
+
+
   const pregeneratedRounds = pregenerateRounds(teams.length);
   const updatedFirstRoundMatchups = createInitialMatchups(teams);
   const [isBackendUiVisible, setIsBackendUiVisible] = useState(true);
+
   if (pregeneratedRounds.length > 0) {
     pregeneratedRounds[0].brackets = updatedFirstRoundMatchups
   }
@@ -340,9 +348,9 @@ const App = () => {
 
   return (
     <div id="main-container">
-      {isBackendUiVisible && <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} />}
+      {isBackendUiVisible && <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onRoundNamesChange={setRoundNames} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} onBracketNameChange={setBracketName} />}
       <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
-      <BottomBar activeItem={activeItem} />
+      <BottomBar activeItem={activeItem} bracketName={bracketName} categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} />
     </div>
   );
 };
@@ -432,14 +440,22 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
 };
 
 
-const BottomBar = ({ activeItem }) => {
+const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategoriesWithTopics }) => {
   let content = ''; // Default message when no item is active
 
   // Determine the content based on the type of the active item
   if (activeItem) {
     if (activeItem.title) {
       // It's a topic
-      content = activeItem.title;
+      let categoryOfActiveItem = categoriesWithTopics.find(category => category.topics.includes(activeItem)) ||
+        endCategoriesWithTopics.find(category => category.topics.includes(activeItem));
+      let categoryName = categoryOfActiveItem ? categoryOfActiveItem.categoryName : '';
+      content = (
+        <div>
+          <h3 className='sectionTitle'>{categoryName}</h3>
+          <span>{activeItem.title}</span>
+        </div>
+      );
     } else if (activeItem.matchup) {
       // It's a bracket
       const { matchup, winner } = activeItem;
@@ -456,9 +472,10 @@ const BottomBar = ({ activeItem }) => {
             <td key={`team-${index}`} style={{
               border: 'none',
               // border: '3px solid white',
-              padding: '8px',
-              fontWeight: winner === index ? 'bold' : 'normal',
-              // textDecoration: winner === index ? 'underline' : 'none',
+              padding: '0px 8px',
+              // fontStyle: winner === index ? 'italic' : 'normal',
+              fontWeight: 'bold',
+              textDecoration: winner === index ? 'underline' : 'none',
               color: winner === index ? '#FFC72C' : 'inherit',
               textAlign: 'center'
             }}>
@@ -478,11 +495,14 @@ const BottomBar = ({ activeItem }) => {
 
         // Use a table to display the matchup with "VS" text
         content = (
-          <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none' }}>
-            <tbody>
-              <tr>{cells}</tr>
-            </tbody>
-          </table>
+          <div>
+            <h3 style={{marginLeft: '8px'}} className='sectionTitle'>{bracketName || "Matchup"}</h3>
+            <table style={{ width: '100%' }}>
+              <tbody>
+                <tr>{cells}</tr>
+              </tbody>
+            </table>
+          </div>
         );
       }
     }

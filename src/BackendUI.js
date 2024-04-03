@@ -2,13 +2,16 @@ import { useState } from 'preact/hooks';
 import { h } from 'preact';
 
 
-const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange }) => {
+const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange, onRoundNamesChange, onBracketNameChange }) => {
     const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
     const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
     const [teamSeed, setTeamSeed] = useState('');
     const [teamName, setTeamName] = useState('');
     const [teams, setTeams] = useState([]);
+    const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'Quarterfinals', 'Round of 16']);
+    const [bracketName, setBracketName] = useState('');
     const addButtonStyling = { background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginTop: '10px' };
+
     // Add new category
     const handleAddNewCategory = () => {
         setCategoriesWithTopics([...categoriesWithTopics, { categoryName: '', topics: [] }]);
@@ -60,6 +63,11 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
         setEndCategoriesWithTopics(updatedEndCategories);
     };
 
+    const handleRoundNameChange = (roundIndex, newRoundName) => {
+        const updated = [...roundNames];
+        updated[roundIndex] = newRoundName;
+        setRoundNames(updated);
+    }
     // !TODO make the team name editable once entered.
 
     // Add new team with validation for seed uniqueness
@@ -99,6 +107,8 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
         onCategoriesWithTopicsChange(categoriesWithTopics.filter(category => category.categoryName));
         onEndCategoriesWithTopicsChange(endCategoriesWithTopics.filter(category => category.categoryName));
         onTeamsChange(teams);
+        onRoundNamesChange(roundNames);
+        onBracketNameChange(bracketName);
     };
 
     // Delete category by index
@@ -180,6 +190,13 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                 </li>
             </div>
             <div style={{ flexBasis: '48%' }}>
+                <div>
+                    <h2>Bracket Name</h2>
+                    <input type="text"
+                        value={bracketName}
+                        onChange={(e) => setBracketName(e.target.value)}
+                        placeholder="Bracket Name" />
+                </div>
                 <h2>Manage Teams</h2>
                 <ul>
                     {teams.map((team, index) => (
@@ -194,6 +211,17 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                         <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" />
                         <button onClick={handleAddTeam}>Add Team</button>
                     </li>
+                </ul>
+                <h2>Manage Round Names</h2>
+                <ul>
+                    {roundNames.map((roundName, index) =>
+                    (<li key={index}>
+                        <input type="text"
+                            value={roundName}
+                            onChange={(e) => handleRoundNameChange(index, e.target.value)}
+                            placeholder="Round Name" />
+                    </li>
+                    ))}
                 </ul>
             </div>
             <div style={{ flexBasis: '48%' }}>
@@ -235,7 +263,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
             </div>
             <div id="save-button-container">
                 <button onClick={handleSave} style={{ padding: '10px 20px', backgroundColor: 'aquamarine', fontSize: '16px' }}>
-                    Generate Sidebar (Press Cmd/Ctrl + B to Hide)
+                    Generate Sidebar (Press ⌘/Ctrl + B to Hide)
                 </button>
             </div>
         </div>
