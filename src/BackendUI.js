@@ -175,7 +175,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                             <input
                                 type="text"
                                 value={category.categoryName}
-                                onChange={(e) => handleCategoryNameChange(categoryIndex, e.target.value)}
+                                onInput={(e) => handleCategoryNameChange(categoryIndex, e.target.value)}
                                 placeholder="Category Name"
                             />
                             <span className="delete-btn" onClick={() => handleDeleteCategory(categoryIndex)}>❌</span>
@@ -186,7 +186,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                                     <input
                                         type="text"
                                         value={topic.title}
-                                        onChange={(e) => handleTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
+                                        onInput={(e) => handleTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
                                         placeholder="Topic Title"
                                     />
                                     <span className="delete-btn" onClick={() => handleDeleteTopic(categoryIndex, topicIndex)} >❌</span>
@@ -212,21 +212,21 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                     <h2>Bracket Name</h2>
                     <input type="text"
                         value={bracketName}
-                        onChange={(e) => setBracketName(e.target.value)}
+                        onInput={(e) => setBracketName(e.target.value)}
                         placeholder="Bracket Name" />
                 </div>
                 <h2>Manage Teams</h2>
                 <ul>
                     {teams.map((team, index) => (
                         <li key={index} className="team-item">
-                            Seed: <input type="number" value={team.seed} onChange={(e) => handleTeamSeedChange(index, e.target.value)}  placeholder="Seed (1-16)" min="1" max="16" />
-                            Name: <input type="text" value={team.name} onChange={(e) => handleTeamNameChange(index, e.target.value)} placeholder="Team Name" />
+                            Seed: <input type="number" value={team.seed} onInput={(e) => handleTeamSeedChange(index, e.target.value)}  placeholder="Seed (1-16)" min="1" max="16" />
+                            Name: <input type="text" value={team.name} onInput={(e) => handleTeamNameChange(index, e.target.value)} placeholder="Team Name" />
                             <span className="delete-btn" onClick={() => handleDeleteTeam(index)}>❌</span>
                         </li>
                     ))}
                     <li style={{ listStyleType: 'none' }}>
-                        <input type="number" value={teamSeed} onChange={(e) => setTeamSeed(e.target.value)} placeholder="Seed (1-16)" min="1" max="16" />
-                        <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" />
+                        <input type="number" value={teamSeed} onInput={(e) => setTeamSeed(e.target.value)} placeholder="Seed (1-16)" min="1" max="16" />
+                        <input type="text" value={teamName} onInput={(e) => setTeamName(e.target.value)} placeholder="Team Name" />
                         <button onClick={handleAddTeam}>Add Team</button>
                     </li>
                 </ul>
@@ -236,7 +236,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                     (<li key={index}>
                         <input type="text"
                             value={roundName}
-                            onChange={(e) => handleRoundNameChange(index, e.target.value)}
+                            onInput={(e) => handleRoundNameChange(index, e.target.value)}
                             placeholder="Round Name" />
                     </li>
                     ))}
@@ -250,7 +250,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                             <input
                                 type="text"
                                 value={category.categoryName}
-                                onChange={(e) => handleEndCategoryNameChange(categoryIndex, e.target.value)}
+                                onInput={(e) => handleEndCategoryNameChange(categoryIndex, e.target.value)}
                                 placeholder="End Category Name"
                             />
                             <span className="delete-btn" onClick={() => handleDeleteEndCategory(categoryIndex)}>❌</span>
@@ -261,7 +261,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                                     <input
                                         type="text"
                                         value={topic.title}
-                                        onChange={(e) => handleEndTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
+                                        onInput={(e) => handleEndTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
                                         placeholder="End Topic Title"
                                     />
                                     <span className="delete-btn" onClick={() => handleDeleteEndTopic(categoryIndex, topicIndex)}>❌</span>

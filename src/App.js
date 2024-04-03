@@ -107,7 +107,7 @@ const App = () => {
   const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
   const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
   const [teams, setTeams] = useState([]);
-  const [bracketName, setBracketName] = useState([]);
+  const [bracketName, setBracketName] = useState('');
   const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'QuarterFinals', 'Round of 16']);
 
   // Pre-generates all rounds with placeholders
@@ -129,12 +129,13 @@ const App = () => {
     return rounds;
   };
 
-
-  const pregeneratedRounds = pregenerateRounds(teams.length);
+  const [pregeneratedRounds, setPregeneratedRounds] = useState(pregenerateRounds(teams.length));
   const updatedFirstRoundMatchups = createInitialMatchups(teams);
   const [isBackendUiVisible, setIsBackendUiVisible] = useState(true);
 
   if (pregeneratedRounds.length > 0) {
+    let x = pregeneratedRounds;
+    x[0].brackets = updatedFirstRoundMatchups;
     pregeneratedRounds[0].brackets = updatedFirstRoundMatchups
   }
 
@@ -339,12 +340,16 @@ const App = () => {
     const handleKeyDown = (e) => {
       // Merging key handling logic for cycling topics/brackets and selecting winners
       if (e.key === "ArrowDown") {
+        e.preventDefault();
         cycleActiveItem('forward');
       } else if (e.key === "ArrowUp") {
+        e.preventDefault();
         cycleActiveItem('backward');
       } else if (e.key === "ArrowRight") {
+        // e.preventDefault();
         selectWinner(1);
       } else if (e.key === "ArrowLeft") {
+        // e.preventDefault();
         selectWinner(0);
       } else if (e.key === "b" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault(); // Prevent the default action for Cmd-B/Ctrl-B
@@ -390,7 +395,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
   }, [activeItem]);
 
   return (
-    <div id="right-sidebar" ref={sidebarRef} className='sidebarBackground'>
+    <div id="right-sidebar" ref={sidebarRef}>
       {categoriesWithTopics.length > 0 && categoriesWithTopics.map((category, categoryIndex) => (
         <div key={`topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}`}>{category.categoryName}</h3>
@@ -493,7 +498,7 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
       // Use a div to display the bracket name and a table for the matchup
       content = (
         <div>
-          <h3 style={{ marginLeft: '8px' }} className='sectionTitle'>{bracketName || "Matchup"}</h3>
+          <h3 style={{ marginLeft: '8px' }} className='sectionTitle'>{bracketName || ""}</h3>
           <table style={{ width: '100%' }}>
             <tbody>
               <tr>{cells}</tr>

@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'); */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap'); */
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&display=swap');
 
@@ -11,6 +11,18 @@
   box-sizing: border-box;
 }
 
+:root {
+  --sidebar-bg-color: whitesmoke;
+  --bottom-bar-start-color: rgba(29, 70, 162, 1); /* Dark blue */
+  --bottom-bar-end-color: rgba(9, 9, 121, 1); /* Lighter blue */
+  --bottom-bar-text-color: white;
+  --header-text-color: black; 
+  --active-item-color: #FFC72C; /* For items that are 'active' */
+  --table-border-color: rgb(140, 140, 140); /* For tables */
+  --table-th-td-border-color: rgb(160, 160, 160); /* For table cells */
+  --topic-text-color: black; /* Assuming black is the primary color for list items */
+  --table-text-color: black;
+}
 
 #main-container {
   position: relative;
@@ -36,7 +48,7 @@
 [id^="header-"] {
   display: flex;
   font-family: 'Bebas Neue', sans-serif;
-  color: black;
+  color: var(--header-text-color);
   font-size: 1.7em;
 
 }
@@ -46,35 +58,26 @@
 }
 
 table.active-item th, table.active-item td{
-  border: 3px solid #FFC72C		;
+  border: 3px solid var(--active-item-color);
 }
 
 #matchup-table {
   border-collapse: collapse;
-  border: 2px solid rgb(140 140 140);
+  border: 2px solid var(--table-border-color);
   /* font-family: sans-serif; */
   font-size: 1.3rem;
   letter-spacing: 1px;
   margin-bottom: 15px;
 }
 
-/* table {
-  border-collapse: collapse;
-  border: 2px solid rgb(140 140 140); */
-  /* font-family: sans-serif; */
-  /* font-size: 1.3rem;
-  letter-spacing: 1px;
-  margin-bottom: 15px;
-} */
-
 th,
 td {
-  border: 3px solid rgb(160 160 160);
+  border: 3px solid var(--table-th-td-border-color);
   padding: 8px 10px;
 }
 
 ul {
-  color: black;
+  color: var(--topic-text-color);
   font-size: 1.3em;
   font-family: 'EB Garamond', serif;
   font-weight: 400;
@@ -85,42 +88,19 @@ ul {
 [id^="rounds-"] {
   display: flex;
   font-family: 'EB Garamond';
-  color: black;
+  color: var(--table-text-color);
   font-size: 2em;
 
 }
 
 .active {
-  color: #FFC72C;
+  color: var(--active-item-color);
   font-weight: bold;
 }
 
 .category-list {
   list-style: none;
   padding-left: 0px;
-}
-
-
-/* Styles for individual matchup items */
-.matchup-item {
-  border: 2px solid #28a745;
-  /* Example green border */
-  margin: 5px;
-  /* Space above and below each matchup item */
-  padding: 10px;
-  width: 80%;
-  /* Adjust width as needed */
-  background-color: #e9f8eb;
-  /* Light background */
-  border-radius: 5px;
-  /* Rounded corners */
-  text-align: center;
-  /* Center text within the box */
-  position: relative;
-  /* Needed for absolute positioning of the 'VS' overlay */
-  z-index: 1;
-  /* Ensures matchup items are under the 'VS' overlay */
-  font-family: 'Inter', sans-serif;
 }
 
 .bottom-vs {
@@ -132,34 +112,6 @@ ul {
   border: 0px;
   color: white;
   /* opacity: 0.6; */
-}
-/* Styles for the "VS" text overlay */
-.vs-overlay {
-  position: absolute;
-  top: 50%;
-  /* Center vertically in the middle of the matchup pair container */
-  left: 50%;
-  /* Center horizontally */
-  transform: translate(-50%, -50%);
-  /* Offset the element by half of its width and height */
-  z-index: 1;
-  /* Make sure it's above the other elements */
-}
-
-/* Container for each matchup pair */
-.matchup-pair-container {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  /* Align items in a row */
-  justify-content: center;
-  /* Center items horizontally */
-  align-items: center;
-  /* Center items vertically */
-  gap: 20px;
-  /* Spacing between elements */
-  margin-bottom: 20px;
-  /* Spacing between each matchup pair container */
 }
 
 #save-button-container {
@@ -192,7 +144,7 @@ body {
   padding-left: 20px;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: whitesmoke;
+  background-color: var(--sidebar-bg-color);
   scrollbar-width: none; /* For Firefox */
   -ms-overflow-style: none; /* For Internet Explorer and Edge */
 
@@ -200,12 +152,6 @@ body {
 
 #right-sidebar::-webkit-scrollbar {
   display: none; /* For Chrome, Safari, and Opera */
-}
-
-.sidebarBackground {
-  /* background-image: url("./sidebar-bg.jpg"); */
-  background-size: cover;
-  background-position: center;
 }
 
 #bottom-bar {
@@ -221,11 +167,11 @@ body {
   justify-content: flex-start;
   padding-left: 40px;
   background: rgb(29, 70, 162);
-  background: linear-gradient(90deg, rgba(29, 70, 162, 1) 0%, rgba(9, 9, 121, 1) 100%);
+  background: linear-gradient(90deg, var(--bottom-bar-start-color) 0%, var(--bottom-bar-end-color) 100%);
   font-size: 50px;
   font-weight: bold;
   font-family: 'Bebas Neue', sans-serif;
-  color: white;
+  color: var(--bottom-bar-text-color);
 }
 
 .sectionTitle {
@@ -234,17 +180,9 @@ body {
   margin-bottom: 0;
 }
 
-#topic-list li {
-  list-style-type: none;
-  cursor: pointer;
-  margin: 5px 0;
-  font-size: 20px;
-}
-
 #right-sidebar ul {
   margin-bottom: 50px;
 }
-
 
 
 .delete-btn {
@@ -257,4 +195,9 @@ body {
 .item:hover .delete-btn,
 .team-item:hover .delete-btn {
   visibility: visible;
+}
+
+/* Solid border */
+hr.solid {
+  border-top: 3px solid #bbb;
 }
