@@ -85,8 +85,6 @@ const generateRoundName = (numTeams) => {
 // Util function to generate a simple unique ID
 const generateMatchupId = (roundIndex, matchupIndex) => `round${roundIndex}-matchup${matchupIndex}`;
 
-// Pre-generates all rounds with placeholders
-
 
 const createInitialMatchups = (teams) => {
   if (teams.length === 0) return [];
@@ -112,6 +110,7 @@ const App = () => {
   const [bracketName, setBracketName] = useState([]);
   const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'QuarterFinals', 'Round of 16']);
 
+  // Pre-generates all rounds with placeholders
   const pregenerateRounds = (teamCount) => {
     if (teamCount <= 0) return [];
     let rounds = [];
@@ -257,18 +256,29 @@ const App = () => {
 
       // Create matchups for the next round based on winners available
       for (let j = 0; j < winners.length; j += 2) {
+        const matchupId = generateMatchupId(i + 1, nextRoundMatchups.length);
         if (winners[j + 1]) {
           // Pair winners as matchups
-          nextRoundMatchups.push({ matchup: [winners[j], winners[j + 1]], winner: null });
+          nextRoundMatchups.push({
+            id: matchupId,
+            matchup: [winners[j], winners[j + 1]],
+            winner: null
+          });
         } else {
           // Handle an odd number of winners by adding a placeholder opponent
-          nextRoundMatchups.push({ matchup: [winners[j], { name: '?', seed: undefined }], winner: null });
+          nextRoundMatchups.push({
+            id: matchupId,
+            matchup: [winners[j], { name: '?', seed: undefined }],
+            winner: null
+          });
         }
       }
 
       // Fill in remaining matchups with placeholders if the actual matchups are less than expected
       while (nextRoundMatchups.length < nextRoundMatchupsExpected) {
+        const placeholderMatchupId = generateMatchupId(i + 1, nextRoundMatchups.length); 
         nextRoundMatchups.push({
+          id: placeholderMatchupId,
           matchup: [{ name: '?', seed: undefined }, { name: '?', seed: undefined }],
           winner: null
         });
@@ -460,16 +470,16 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
       // It's a bracket
       const { matchup, winner } = activeItem;
       const cells = matchup.map((team, index) => (
-            <td key={`team-${index}`} style={{
-              border: 'none',
-              padding: '0px 8px',
-              fontWeight: 'bold',
-              textDecoration: winner === index ? 'underline' : 'none',
-              color: winner === index ? '#FFC72C' : 'inherit',
-              textAlign: 'center'
-            }}>
+        <td key={`team-${index}`} style={{
+          border: 'none',
+          padding: '0px 8px',
+          fontWeight: 'bold',
+          textDecoration: winner === index ? 'underline' : 'none',
+          color: winner === index ? '#FFC72C' : 'inherit',
+          textAlign: 'center'
+        }}>
           {team.name !== '?' ? `${team.seed}. ${team.name}` : "?"}
-            </td>
+        </td>
       ));
 
       // Insert "VS" between the teams
@@ -478,19 +488,19 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
       } else {
         // Handle cases where only one team is available for the matchup
         cells.push(<td key="vs" className='bottom-vs'>VS. ?</td>);
-          }
+      }
 
       // Use a div to display the bracket name and a table for the matchup
-        content = (
-          <div>
+      content = (
+        <div>
           <h3 style={{ marginLeft: '8px' }} className='sectionTitle'>{bracketName || "Matchup"}</h3>
-            <table style={{ width: '100%' }}>
-              <tbody>
-                <tr>{cells}</tr>
-              </tbody>
-            </table>
-          </div>
-        );
+          <table style={{ width: '100%' }}>
+            <tbody>
+              <tr>{cells}</tr>
+            </tbody>
+          </table>
+        </div>
+      );
 
     }
   }
