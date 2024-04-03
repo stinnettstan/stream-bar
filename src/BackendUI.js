@@ -68,7 +68,25 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
         updated[roundIndex] = newRoundName;
         setRoundNames(updated);
     }
-    // !TODO make the team name editable once entered.
+
+    // Update team name by index
+    const handleTeamNameChange = (index, newName) => {
+        const updatedTeams = [...teams];
+        updatedTeams[index].name = newName;
+        setTeams(updatedTeams);
+    };
+
+    // Update team seed by index and ensure uniqueness
+    const handleTeamSeedChange = (index, newSeed) => {
+        const seedInt = parseInt(newSeed, 10);
+        if (!isNaN(seedInt) && seedInt >= 1 && seedInt <= 16 && !teams.some((t, i) => t.seed === seedInt && i !== index)) {
+            const updatedTeams = [...teams];
+            updatedTeams[index].seed = seedInt;
+            setTeams(updatedTeams.sort((a, b) => a.seed - b.seed));
+        } else {
+            alert("Invalid seed or seed already used.");
+        }
+    };
 
     // Add new team with validation for seed uniqueness
     const handleAddTeam = () => {
@@ -201,8 +219,8 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                 <ul>
                     {teams.map((team, index) => (
                         <li key={index} className="team-item">
-                            Seed: <input type="number" value={team.seed} onChange={(e) => setTeamSeed(e.target.value)} placeholder="Seed (1-16)" min="1" max="16" />
-                            Name: <input type="text" value={team.name} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" />
+                            Seed: <input type="number" value={team.seed} onChange={(e) => handleTeamSeedChange(index, e.target.value)}  placeholder="Seed (1-16)" min="1" max="16" />
+                            Name: <input type="text" value={team.name} onChange={(e) => handleTeamNameChange(index, e.target.value)} placeholder="Team Name" />
                             <span className="delete-btn" onClick={() => handleDeleteTeam(index)}>❌</span>
                         </li>
                     ))}
