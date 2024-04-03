@@ -8,7 +8,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
     const [teamSeed, setTeamSeed] = useState('');
     const [teamName, setTeamName] = useState('');
     const [teams, setTeams] = useState([]);
-
+    const addButtonStyling = { background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginTop: '10px' };
     // Add new category
     const handleAddNewCategory = () => {
         setCategoriesWithTopics([...categoriesWithTopics, { categoryName: '', topics: [] }]);
@@ -150,7 +150,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                                 onChange={(e) => handleCategoryNameChange(categoryIndex, e.target.value)}
                                 placeholder="Category Name"
                             />
-                            <span className="delete-btn" onClick={() => handleDeleteCategory(categoryIndex)} style={{ marginLeft: '10px', cursor: 'pointer' }}>❌</span>
+                            <span className="delete-btn" onClick={() => handleDeleteCategory(categoryIndex)}>❌</span>
                         </div>
                         <ul>
                             {category.topics.map((topic, topicIndex) => (
@@ -161,11 +161,11 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                                         onChange={(e) => handleTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
                                         placeholder="Topic Title"
                                     />
-                                    <span className="delete-btn" onClick={() => handleDeleteTopic(categoryIndex, topicIndex)} style={{ marginLeft: '10px', cursor: 'pointer' }}>❌</span>
+                                    <span className="delete-btn" onClick={() => handleDeleteTopic(categoryIndex, topicIndex)} >❌</span>
                                 </li>
                             ))}
                             <li key="add-topic" style={{ listStyleType: 'none' }}>
-                                <button onClick={() => handleAddNewTopic(categoryIndex)} style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}>
+                                <button onClick={() => handleAddNewTopic(categoryIndex)} style={addButtonStyling}>
                                     + Add Topic
                                 </button>
                             </li>
@@ -174,7 +174,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                     </div>
                 ))}
                 <li style={{ listStyleType: 'none' }}>
-                    <button onClick={handleAddNewCategory} style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginTop: '10px' }}>
+                    <button onClick={handleAddNewCategory} style={addButtonStyling}>
                         + Add Category
                     </button>
                 </li>
@@ -207,7 +207,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                                 onChange={(e) => handleEndCategoryNameChange(categoryIndex, e.target.value)}
                                 placeholder="End Category Name"
                             />
-                            <span className="delete-btn" onClick={() => handleDeleteEndCategory(categoryIndex)} style={{ marginLeft: '10px', cursor: 'pointer' }}>❌</span>
+                            <span className="delete-btn" onClick={() => handleDeleteEndCategory(categoryIndex)}>❌</span>
                         </div>
                         <ul>
                             {category.topics.map((topic, topicIndex) => (
@@ -218,18 +218,18 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
                                         onChange={(e) => handleEndTopicTitleChange(categoryIndex, topicIndex, e.target.value)}
                                         placeholder="End Topic Title"
                                     />
-                                    <span className="delete-btn" onClick={() => handleDeleteEndTopic(categoryIndex, topicIndex)} style={{ marginLeft: '10px', cursor: 'pointer' }}>❌</span>
+                                    <span className="delete-btn" onClick={() => handleDeleteEndTopic(categoryIndex, topicIndex)}>❌</span>
                                 </li>
                             ))}
                             <li key="add-end-topic" style={{ listStyleType: 'none' }}>
-                                <button onClick={() => handleAddNewEndTopic(categoryIndex)} style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}>
+                                <button onClick={() => handleAddNewEndTopic(categoryIndex)} style={addButtonStyling}>
                                     + Add End Topic
                                 </button>
                             </li>
                         </ul>
                     </div>
                 ))}
-                <button onClick={handleAddNewEndCategory} style={{ background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginTop: '10px' }}>
+                <button onClick={handleAddNewEndCategory} style={addButtonStyling}>
                     + Add End Category
                 </button>
             </div>
