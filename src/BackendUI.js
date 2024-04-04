@@ -66,7 +66,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
     const handleRoundNameChange = (roundIndex, newRoundName) => {
         const updated = [...roundNames];
         updated[roundIndex] = newRoundName;
-        setRoundNames(updated);
+        setRoundNames(updated);      
     }
 
     // Update team name by index

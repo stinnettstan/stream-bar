@@ -85,23 +85,6 @@ const generateRoundName = (numTeams) => {
 // Util function to generate a simple unique ID
 const generateMatchupId = (roundIndex, matchupIndex) => `round${roundIndex}-matchup${matchupIndex}`;
 
-
-const createInitialMatchups = (teams) => {
-  if (teams.length === 0) return [];
-  // Sort teams by seed in ascending order
-  const sortedTeams = [...teams].sort((a, b) => a.seed - b.seed);
-
-  let matchups = [];
-  for (let i = 0; i < sortedTeams.length / 2; i++) {
-    matchups.push({
-      id: generateMatchupId(0, i), // Assuming these are first-round matchups
-      matchup: [sortedTeams[i], sortedTeams[sortedTeams.length - 1 - i]],
-      winner: null
-    });
-  }
-  return matchups;
-};
-
 const App = () => {
 
   const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
@@ -110,34 +93,40 @@ const App = () => {
   const [bracketName, setBracketName] = useState('');
   const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'QuarterFinals', 'Round of 16']);
 
-  // Pre-generates all rounds with placeholders
-  const pregenerateRounds = (teamCount) => {
-    if (teamCount <= 0) return [];
-    let rounds = [];
-    let matchupsCount = teamCount / 2; // Start with the initial number of matchups
-    for (let i = 0; i < totalRoundsNeeded(teamCount); i++) {
-      rounds.push({
-        name: roundNames[(Math.log2(matchupsCount * 2) - 1)],//generateRoundName(matchupsCount * 2),
-        brackets: Array.from({ length: matchupsCount }, (_, index) => ({
-          id: generateMatchupId(i, index),
-          matchup: [{ name: '?' }, { name: '?' }],
-          winner: null
-        })),
-      });
-      matchupsCount = Math.ceil(matchupsCount / 2); // Prepare matchups count for the next round
-    }
-    return rounds;
+  const generateMatchupsForRound = (teams, roundIndex) => {
+    return teams.map((team, i) => ({
+      id: generateMatchupId(roundIndex, i),
+      matchup: [team, teams[teams.length - 1 - i]],
+      winner: null
+    })).slice(0, teams.length / 2); // Only need the first half due to mirroring
   };
+  
+  const pregenerateRounds = (teams) => {
+    if (teams.length === 0) return [];
+  
+    const sortedTeams = [...teams].sort((a, b) => a.seed - b.seed);
+    const totalRounds = totalRoundsNeeded(teams.length);
+  
+    return Array.from({ length: totalRounds }, (_, i) => {
+      const matchupsCount = Math.pow(2, totalRounds - i - 1);
+      const name = roundNames[Math.log2(matchupsCount * 2) - 1];
+  
+      // Generate matchups only for the first round using sorted teams
+      const brackets = i === 0
+        ? generateMatchupsForRound(sortedTeams, i)
+        : Array.from({ length: matchupsCount }, (__, index) => ({
+            id: generateMatchupId(i, index),
+            matchup: [{ name: '?' }, { name: '?' }],
+            winner: null
+          }));
+  
+      return { name, brackets };
+    });
+  };
+  
 
-  const [pregeneratedRounds, setPregeneratedRounds] = useState(pregenerateRounds(teams.length));
-  const updatedFirstRoundMatchups = createInitialMatchups(teams);
+  const pregeneratedRounds = pregenerateRounds(teams);
   const [isBackendUiVisible, setIsBackendUiVisible] = useState(true);
-
-  if (pregeneratedRounds.length > 0) {
-    let x = pregeneratedRounds;
-    x[0].brackets = updatedFirstRoundMatchups;
-    pregeneratedRounds[0].brackets = updatedFirstRoundMatchups
-  }
 
   const [rounds, setRounds] = useState(pregeneratedRounds);
   const [currentRound, setCurrentRound] = useState(0);
@@ -163,9 +152,7 @@ const App = () => {
 
   const handleTeamsChange = (newTeams) => {
     setTeams(newTeams);
-    const newRounds = pregenerateRounds(newTeams.length);
-    const firstRoundMatchups = createInitialMatchups(newTeams);
-    if (newRounds[0]) newRounds[0].brackets = firstRoundMatchups;
+    const newRounds = pregenerateRounds(newTeams);
     setRounds(newRounds);
     setCurrentRound(0);
     setActiveItem(flatItems[0] || {});
@@ -277,7 +264,7 @@ const App = () => {
 
       // Fill in remaining matchups with placeholders if the actual matchups are less than expected
       while (nextRoundMatchups.length < nextRoundMatchupsExpected) {
-        const placeholderMatchupId = generateMatchupId(i + 1, nextRoundMatchups.length); 
+        const placeholderMatchupId = generateMatchupId(i + 1, nextRoundMatchups.length);
         nextRoundMatchups.push({
           id: placeholderMatchupId,
           matchup: [{ name: '?', seed: undefined }, { name: '?', seed: undefined }],
@@ -309,7 +296,10 @@ const App = () => {
     }
   };
 
-
+  useEffect(() => {
+    const newRounds = pregenerateRounds(teams);
+    setRounds(newRounds);
+  }, [roundNames, teams]); 
 
   useEffect(() => {
     const flatItemsUpdate = [
