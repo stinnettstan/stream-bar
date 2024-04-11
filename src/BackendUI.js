@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import { h } from 'preact';
 
 
-const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange, onRoundNamesChange, onBracketNameChange }) => {
+const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange, onRoundNamesChange, onBracketNameChange, onTangentChange}) => {
     const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
     const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
     const [teamSeed, setTeamSeed] = useState('');
@@ -10,6 +10,7 @@ const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWit
     const [teams, setTeams] = useState([]);
     const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'Quarterfinals', 'Round of 16']);
     const [bracketName, setBracketName] = useState('');
+    const [tangent, setTangent] = useState('');
     const addButtonStyling = { background: 'none', border: 'none', padding: '0', cursor: 'pointer', color: '#007bff', textDecoration: 'underline', marginTop: '10px' };
 
     // Add new category
@@ -66,7 +67,7 @@ const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWit
     const handleRoundNameChange = (roundIndex, newRoundName) => {
         const updated = [...roundNames];
         updated[roundIndex] = newRoundName;
-        setRoundNames(updated);      
+        setRoundNames(updated);
     }
 
     // Update team name by index
@@ -164,6 +165,12 @@ const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWit
         setTeams(updatedTeams);
     };
 
+    // Function to send the dynamic topic to App
+    const handleTangentSubmit = () => {
+        onTangentChange(tangent); // Propagate up to App
+        setTangent(''); // Optionally clear after sending
+    };
+
     // Component return remains mostly unchanged, with additions for delete functionality...
     return (
         <div className={`${className}`} style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '1590px', maxHeight: '895px', paddingLeft: '30px', paddingRight: '30px' }}>
@@ -206,6 +213,16 @@ const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWit
                         + Add Category
                     </button>
                 </li>
+                <div>
+                <h3>Tangent</h3>
+                    <input
+                        type="text"
+                        value={tangent}
+                        onChange={(e) => setTangent(e.target.value)}
+                        placeholder="Enter a temp tangent"
+                    />
+                    <button onClick={handleTangentSubmit}>Show Tangent!</button>
+                </div>
             </div>
             <div style={{ flexBasis: '48%' }}>
                 <div>
@@ -219,7 +236,7 @@ const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWit
                 <ul>
                     {teams.map((team, index) => (
                         <li key={index} className="team-item">
-                            Seed: <input type="number" value={team.seed} onInput={(e) => handleTeamSeedChange(index, e.target.value)}  placeholder="Seed (1-16)" min="1" max="16" />
+                            Seed: <input type="number" value={team.seed} onInput={(e) => handleTeamSeedChange(index, e.target.value)} placeholder="Seed (1-16)" min="1" max="16" />
                             Name: <input type="text" value={team.name} onInput={(e) => handleTeamNameChange(index, e.target.value)} placeholder="Team Name" />
                             <span className="delete-btn" onClick={() => handleDeleteTeam(index)}>❌</span>
                         </li>

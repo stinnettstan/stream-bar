@@ -111,7 +111,7 @@ ul {
 
 }
 
-.active {
+li.active-item {
   color: var(--active-item-color);
   font-weight: bold;
 }

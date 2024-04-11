@@ -92,6 +92,7 @@ const App = () => {
   const [teams, setTeams] = useState([]);
   const [bracketName, setBracketName] = useState('');
   const [roundNames, setRoundNames] = useState(['Finals', 'Semifinals', 'QuarterFinals', 'Round of 16']);
+  const [tangent, setTangent] = useState(null);
 
   const generateMatchupsForRound = (teams, roundIndex) => {
     return teams.map((team, i) => ({
@@ -159,6 +160,14 @@ const App = () => {
     // setActiveItem(firstRoundMatchups[0] || {});
   };
 
+  // Function to handle changes to the dynamic topic from BackendUI
+  const handleTangentSubmit = (topic) => {
+    setTangent(topic);
+    // Keep activeItem as is, but don't show it stylistically.
+    const activeItems = document.querySelectorAll('#right-sidebar .active-item');
+    activeItems.forEach(item => item.classList.remove('active-item'));
+  };
+
   // Additional function to scroll to the active item's header
   const scrollToActiveHeader = (activeItem) => {
     if (!activeItem) return;
@@ -190,7 +199,7 @@ const App = () => {
       if (headerElement && sidebarContainer) {
         // Use offsetTop to get the distance from the header element to the top of its offsetParent (sidebar)
         // if it's a matchup make sure it doesn't get obscured behind the sticky header
-        const scrollToPosition = headerElement.offsetTop - (activeIsMatchup ? stickyHeader.offsetHeight : 0) - 20;
+        const scrollToPosition = headerElement.offsetTop - ((activeIsMatchup && stickyHeader) ? stickyHeader.offsetHeight : 0) - 20;
 
         // Scroll the sidebar container to the header element's top offset
         sidebarContainer.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
@@ -217,13 +226,13 @@ const App = () => {
     if (!flatItems.length) return; // Early return if there are no items to cycle through
     const currentIndex = flatItems.findIndex(item => item === activeItem);
     let nextIndex = currentIndex;
-
     if (direction === 'forward') {
       nextIndex = (currentIndex + 1) % flatItems.length;
     } else if (direction === 'backward') {
       nextIndex = (currentIndex - 1 + flatItems.length) % flatItems.length;
     }
 
+    setTangent(null); // Always clear tangent when cycling items
     setActiveItem(flatItems[nextIndex]);
     // After setting the new active item, scroll to its header
     scrollToActiveHeader(flatItems[nextIndex]);
@@ -354,11 +363,19 @@ const App = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [activeItem, currentRound, rounds]);
 
+  useEffect(() => {
+    if (activeItem) {
+      scrollToActiveHeader(activeItem);
+    }
+    // This forces the BottomBar to update when tangent changes as well
+    // It triggers re-evaluation of what content should be shown
+  }, [activeItem, tangent]);
+
   return (
     <div id="main-container">
-      {<BackendUI className={isBackendUiVisible ? '' : 'hidden'} onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onRoundNamesChange={setRoundNames} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} onBracketNameChange={setBracketName} />}
+      {<BackendUI className={isBackendUiVisible ? '' : 'hidden'} onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onRoundNamesChange={setRoundNames} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} onBracketNameChange={setBracketName} onTangentChange={handleTangentSubmit} />}
       <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} bracketName={bracketName} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
-      <BottomBar activeItem={activeItem} rounds={rounds} categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} />
+      <BottomBar activeItem={activeItem} tangent={tangent} rounds={rounds} categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} />
     </div>
   );
 };
@@ -395,7 +412,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
           <ul className='category-list'>
             {category.topics.map((topic, topicIndex) => (
               <li key={`topic-item-${topicIndex}`}
-                className={topic === activeItem ? 'active' : ''}
+                className={(topic === activeItem) ? 'active-item' : ''}
                 onClick={() => setActiveItem(topic)}>
                 {topic.title}
               </li>
@@ -453,11 +470,17 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
 };
 
 
-const BottomBar = ({ activeItem, rounds, categoriesWithTopics, endCategoriesWithTopics }) => {
+const BottomBar = ({ activeItem, tangent, rounds, categoriesWithTopics, endCategoriesWithTopics }) => {
   let content = ''; // Default message when no item is active
-
-  // Determine the content based on the type of the active item
-  if (activeItem) {
+  if (tangent) {
+    content = (
+      <div>
+        <h3 className='sectionTitle'>PIVOT</h3>
+        <span>{tangent}</span>
+      </div>
+    );
+    // Determine the content based on the type of the active item
+  } else if (activeItem) {
     if (activeItem.title) {
       // It's a topic
       let categoryOfActiveItem = categoriesWithTopics.find(category => category.topics.includes(activeItem)) ||
