@@ -67,7 +67,7 @@
   display: flex;
   font-family: 'Bebas Neue', sans-serif;
   color: var(--header-text-color);
-  font-size: 1.7em;
+  font-size: 2em;
 
 }
 
@@ -83,7 +83,7 @@ table.active-item th, table.active-item td{
   border-collapse: collapse;
   border: 2px solid var(--table-border-color);
   /* font-family: sans-serif; */
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   letter-spacing: 1px;
   margin-bottom: 15px;
 }
@@ -96,7 +96,7 @@ td {
 
 ul {
   color: var(--topic-text-color);
-  font-size: 1.3em;
+  font-size: 1.6em;
   font-family: 'EB Garamond', serif;
   font-weight: 400;
   /* list-style-type: square; */
