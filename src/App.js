@@ -100,30 +100,30 @@ const App = () => {
       winner: null
     })).slice(0, teams.length / 2); // Only need the first half due to mirroring
   };
-  
+
   const pregenerateRounds = (teams) => {
     if (teams.length === 0) return [];
-  
+
     const sortedTeams = [...teams].sort((a, b) => a.seed - b.seed);
     const totalRounds = totalRoundsNeeded(teams.length);
-  
+
     return Array.from({ length: totalRounds }, (_, i) => {
       const matchupsCount = Math.pow(2, totalRounds - i - 1);
       const name = roundNames[Math.log2(matchupsCount * 2) - 1];
-  
+
       // Generate matchups only for the first round using sorted teams
       const brackets = i === 0
         ? generateMatchupsForRound(sortedTeams, i)
         : Array.from({ length: matchupsCount }, (__, index) => ({
-            id: generateMatchupId(i, index),
-            matchup: [{ name: '?' }, { name: '?' }],
-            winner: null
-          }));
-  
+          id: generateMatchupId(i, index),
+          matchup: [{ name: '?' }, { name: '?' }],
+          winner: null
+        }));
+
       return { name, brackets };
     });
   };
-  
+
 
   const pregeneratedRounds = pregenerateRounds(teams);
   const [isBackendUiVisible, setIsBackendUiVisible] = useState(true);
@@ -163,19 +163,20 @@ const App = () => {
   const scrollToActiveHeader = (activeItem) => {
     if (!activeItem) return;
     let headerId = '';
-
+    let activeIsTitle = 'title' in activeItem;
+    let activeIsMatchup = 'matchup' in activeItem;
     // It's a topic in the initial categories
-    if ('title' in activeItem && categoriesWithTopics.some(cat => cat.topics.includes(activeItem))) {
+    if (activeIsTitle && categoriesWithTopics.some(cat => cat.topics.includes(activeItem))) {
       const category = categoriesWithTopics.find(cat => cat.topics.includes(activeItem));
       headerId = `header-${category.categoryName}`;
     }
     // It's a topic in the end categories
-    else if ('title' in activeItem && endCategoriesWithTopics.some(cat => cat.topics.includes(activeItem))) {
+    else if (activeIsTitle && endCategoriesWithTopics.some(cat => cat.topics.includes(activeItem))) {
       const category = endCategoriesWithTopics.find(cat => cat.topics.includes(activeItem));
       headerId = `header-${category.categoryName}-end`; // Ensure this ID format is unique and used when rendering end category headers
     }
     // It's a matchup
-    else if ('matchup' in activeItem) {
+    else if (activeIsMatchup) {
       const round = rounds.find(r => r.brackets.some(bracket => bracket.id === activeItem.id));
       if (round) {
         headerId = `header-round-${round.name}`;
@@ -184,10 +185,12 @@ const App = () => {
     if (headerId) {
       const headerElement = document.getElementById(headerId);
       const sidebarContainer = document.getElementById('right-sidebar'); // Assuming this is the ID of your sidebar
+      const stickyHeader = document.querySelector('.sidebarBracket');
 
       if (headerElement && sidebarContainer) {
         // Use offsetTop to get the distance from the header element to the top of its offsetParent (sidebar)
-        const scrollToPosition = headerElement.offsetTop - 20;
+        // if it's a matchup make sure it doesn't get obscured behind the sticky header
+        const scrollToPosition = headerElement.offsetTop - (activeIsMatchup ? stickyHeader.offsetHeight : 0) - 20;
 
         // Scroll the sidebar container to the header element's top offset
         sidebarContainer.scrollTo({ top: scrollToPosition, behavior: 'smooth' });
@@ -299,7 +302,7 @@ const App = () => {
   useEffect(() => {
     const newRounds = pregenerateRounds(teams);
     setRounds(newRounds);
-  }, [roundNames, teams]); 
+  }, [roundNames, teams]);
 
   useEffect(() => {
     const flatItemsUpdate = [
@@ -354,13 +357,13 @@ const App = () => {
   return (
     <div id="main-container">
       {isBackendUiVisible && <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onRoundNamesChange={setRoundNames} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} onBracketNameChange={setBracketName} />}
-      <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
-      <BottomBar activeItem={activeItem} bracketName={bracketName} categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} />
+      <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} bracketName={bracketName} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
+      <BottomBar activeItem={activeItem} rounds={rounds} categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} />
     </div>
   );
 };
 
-const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader }) => {
+const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader, bracketName}) => {
   // Ref for the sidebar container
   const sidebarRef = useRef(null);
 
@@ -400,32 +403,37 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
           </ul>
         </div>
       ))}
-      {rounds.length > 0 && rounds.map((round, roundIndex) => (
-        <div key={`round-${roundIndex}`}>
-          <h3 id={`header-round-${round.name}`}>{round.name}</h3>
-          <div>
-            {round.brackets.map((bracket) => (
-              <table id="matchup-table" key={bracket.id} className={isMatchupActive(bracket) ? "active-item" : ''} onClick={() => setActiveItem(bracket)}>
-                <tbody>
-                  {[0, 1].map((index) => (
-                    <tr key={index}>
-                      <th scope='row'>{(bracket.matchup[index].seed !== undefined ? `${bracket.matchup[index].seed}.` : `?`)}</th>
-                      <td style={{
-                        minWidth: "100px",
-                        fontWeight: bracket.winner === index ? 'bold' : 'normal',
-                        textDecoration: bracket.winner === index ? 'underline' : 'none',
-                      }}>
-                        {bracket.matchup[index].name !== '?' ? ` ${bracket.matchup[index].name}` : "?"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ))}
+      <div>
+        {bracketName.length > 0 && (
+          <div className='sidebarBracket'>
+            <h3>{bracketName}</h3>
+          </div>)}
+        {rounds.length > 0 && rounds.map((round, roundIndex) => (
+          <div key={`round-${roundIndex}`}>
+            <h3 id={`header-round-${round.name}`}>{round.name}</h3>
+            <div>
+              {round.brackets.map((bracket) => (
+                <table id="matchup-table" key={bracket.id} className={isMatchupActive(bracket) ? "active-item" : ''} onClick={() => setActiveItem(bracket)}>
+                  <tbody>
+                    {[0, 1].map((index) => (
+                      <tr key={index}>
+                        <th scope='row'>{(bracket.matchup[index].seed !== undefined ? `${bracket.matchup[index].seed}.` : `?`)}</th>
+                        <td style={{
+                          minWidth: "100px",
+                          fontWeight: bracket.winner === index ? 'bold' : 'normal',
+                          textDecoration: bracket.winner === index ? 'underline' : 'none',
+                        }}>
+                          {bracket.matchup[index].name !== '?' ? ` ${bracket.matchup[index].name}` : "?"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
-
+        ))}
+      </div>
       {endCategoriesWithTopics.length > 0 && endCategoriesWithTopics.map((category, categoryIndex) => (
         <div key={`end-topic-${categoryIndex}`}>
           <h3 id={`header-${category.categoryName}-end`}>{category.categoryName}</h3>
@@ -445,7 +453,7 @@ const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, active
 };
 
 
-const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategoriesWithTopics }) => {
+const BottomBar = ({ activeItem, rounds, categoriesWithTopics, endCategoriesWithTopics }) => {
   let content = ''; // Default message when no item is active
 
   // Determine the content based on the type of the active item
@@ -463,6 +471,9 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
       );
     } else if (activeItem.matchup) {
       // It's a bracket
+      // find the round name
+      const roundOfActiveItem = rounds.find(round => round.brackets.some(bracket => bracket.id === activeItem.id));
+      const roundName = roundOfActiveItem ? roundOfActiveItem.name : '';
       const { matchup, winner } = activeItem;
       const cells = matchup.map((team, index) => (
         <td key={`team-${index}`} style={{
@@ -488,7 +499,7 @@ const BottomBar = ({ activeItem, bracketName, categoriesWithTopics, endCategorie
       // Use a div to display the bracket name and a table for the matchup
       content = (
         <div>
-          <h3 style={{ marginLeft: '8px' }} className='sectionTitle'>{bracketName || ""}</h3>
+          <h3 style={{ marginLeft: '8px' }} className='sectionTitle'>{roundName || ""}</h3>
           <table style={{ width: '100%' }}>
             <tbody>
               <tr>{cells}</tr>
