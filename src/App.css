@@ -221,5 +221,5 @@ hr.solid {
 }
 
 .hidden {
-  display: none !important;
+  visibility: hidden;
 }
