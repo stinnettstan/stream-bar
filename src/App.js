@@ -356,14 +356,14 @@ const App = () => {
 
   return (
     <div id="main-container">
-      {isBackendUiVisible && <BackendUI onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onRoundNamesChange={setRoundNames} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} onBracketNameChange={setBracketName} />}
+      {<BackendUI className={isBackendUiVisible ? '' : 'hidden'} onCategoriesWithTopicsChange={handleCategoryTopicChange} onTeamsChange={handleTeamsChange} onRoundNamesChange={setRoundNames} onEndCategoriesWithTopicsChange={handleEndCategoriesWithTopicsChange} onBracketNameChange={setBracketName} />}
       <Sidebar categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} rounds={rounds} bracketName={bracketName} activeItem={activeItem} setActiveItem={setActiveItem} scrollToActiveHeader={scrollToActiveHeader} />
       <BottomBar activeItem={activeItem} rounds={rounds} categoriesWithTopics={categoriesWithTopics} endCategoriesWithTopics={endCategoriesWithTopics} />
     </div>
   );
 };
 
-const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader, bracketName}) => {
+const Sidebar = ({ categoriesWithTopics, endCategoriesWithTopics, rounds, activeItem, setActiveItem, scrollToActiveHeader, bracketName }) => {
   // Ref for the sidebar container
   const sidebarRef = useRef(null);
 

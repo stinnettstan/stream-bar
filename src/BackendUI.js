@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import { h } from 'preact';
 
 
-const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange, onRoundNamesChange, onBracketNameChange }) => {
+const BackendUI = ({ className, onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChange, onTeamsChange, onRoundNamesChange, onBracketNameChange }) => {
     const [categoriesWithTopics, setCategoriesWithTopics] = useState([]);
     const [endCategoriesWithTopics, setEndCategoriesWithTopics] = useState([]);
     const [teamSeed, setTeamSeed] = useState('');
@@ -166,7 +166,7 @@ const BackendUI = ({ onCategoriesWithTopicsChange, onEndCategoriesWithTopicsChan
 
     // Component return remains mostly unchanged, with additions for delete functionality...
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '1590px', maxHeight: '895px', paddingLeft: '30px', paddingRight: '30px' }}>
+        <div className={`${className}`} style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '1590px', maxHeight: '895px', paddingLeft: '30px', paddingRight: '30px' }}>
             <div style={{ flexBasis: '48%' }}>
                 <h2>Manage Categories and Topics</h2>
                 {categoriesWithTopics.map((category, categoryIndex) => (
